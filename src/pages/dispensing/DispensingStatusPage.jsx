@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { dispensingApi } from '../../api/dispensing';
+import AppLayout from '../../components/layout/AppLayout';
 import DispensingStatusContainer from './DispensingStatusContainer';
 import ReceiptConfirmModal from '../../components/dispensing/ReceiptConfirmModal';
 import '../../styles/dispensingStatus.css';
 
 function DispensingStatusPage() {
+  const navigate = useNavigate();
   const [dispensingId] = useState('sample-dispensing');
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
 
@@ -29,40 +32,46 @@ function DispensingStatusPage() {
   };
 
   return (
-    <div>
-      {/* 지도 및 경로 안내 */}
-      <div className="map-container">
-        <div className="route-info-header">
-          <span className="route-path">
-            강북삼성병원 외래동 → <span id="pharmacyName">
-              {statusQuery.data?.pharmacyName || '약국명'}
+    <AppLayout
+      headerProps={{
+        // title: '조제 상황',
+      }}
+    >
+      <div>
+        {/* 지도 및 경로 안내 */}
+        <div className="map-container">
+          <div className="route-info-header">
+            <span className="route-path">
+              강북삼성병원 외래동 → <span id="pharmacyName">
+                {statusQuery.data?.pharmacyName || '약국명'}
+              </span>
             </span>
-          </span>
-          <div className="route-details" id="routeDetails">
-            <span className="route-distance" id="routeDistance">-</span>
-            <span className="route-duration" id="routeDuration">-</span>
+            <div className="route-details" id="routeDetails">
+              <span className="route-distance" id="routeDistance">-</span>
+              <span className="route-duration" id="routeDuration">-</span>
+            </div>
+          </div>
+          <div id="routeMap" className="route-map">
+            지도 영역 (길찾기 API 연동 예정)
           </div>
         </div>
-        <div id="routeMap" className="route-map">
-          지도 영역 (길찾기 API 연동 예정)
-        </div>
-      </div>
 
-      {/* 조제 현황 */}
-      <div className="dispensing-status">
-        <DispensingStatusContainer
-          dispensingId={dispensingId}
-          onComplete={handleCompleteClick}
+        {/* 조제 현황 */}
+        <div className="dispensing-status">
+          <DispensingStatusContainer
+            dispensingId={dispensingId}
+            onComplete={handleCompleteClick}
+          />
+        </div>
+
+        {/* 수령 완료 확인 모달 */}
+        <ReceiptConfirmModal
+          isOpen={isReceiptModalOpen}
+          onConfirm={() => completeMutation.mutate()}
+          onCancel={() => setIsReceiptModalOpen(false)}
         />
       </div>
-
-      {/* 수령 완료 확인 모달 */}
-      <ReceiptConfirmModal
-        isOpen={isReceiptModalOpen}
-        onConfirm={() => completeMutation.mutate()}
-        onCancel={() => setIsReceiptModalOpen(false)}
-      />
-    </div>
+    </AppLayout>
   );
 }
 
