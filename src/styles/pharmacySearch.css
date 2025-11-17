@@ -1,0 +1,485 @@
+/* 약국 검색 페이지 스타일 */
+
+/* 필터 바 */
+.filter-bar {
+    position: absolute;
+    top: 56px;
+    left: 0;
+    right: 0;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    z-index: 999;
+}
+
+.filter-item {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    cursor: pointer;
+    border: none;
+}
+
+.filter-item.active {
+    background: #2563eb;
+    color: #fff;
+}
+
+.filter-dropdown {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    cursor: pointer;
+    border: none;
+}
+
+.filter-tag {
+    padding: 6px 12px;
+    background: #10b981;
+    color: #fff;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+}
+
+.filter-tag:not(.active) {
+    background: rgba(255, 255, 255, 0.9);
+    color: #6b7280;
+}
+
+/* 전체 화면 지도 */
+.map-container {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 200px);
+    min-height: 400px;
+    z-index: 1;
+}
+
+.map-fullscreen {
+    width: 100%;
+    height: 100%;
+    background: #f8f9fa;
+}
+
+.map-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+}
+
+/* 현재 위치 버튼 */
+.current-location-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+.current-location-btn:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    transform: scale(1.05);
+}
+
+/* 약국 리스트 오버레이 */
+.pharmacy-list-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    max-height: 50vh;
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.location-selector, .sort-selector {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    cursor: pointer;
+}
+
+.pharmacy-list {
+    max-height: 35vh;
+    overflow-y: auto;
+    padding-bottom: 100px;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db #f3f4f6;
+}
+
+.pharmacy-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.pharmacy-list::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 3px;
+}
+
+.pharmacy-list::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.pharmacy-list::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+.pharmacy-list-item {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pharmacy-list-item:hover {
+    background: #f3f4f6;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pharmacy-list-item:last-child {
+    border-bottom: none;
+}
+
+.pharmacy-info {
+    flex: 1;
+}
+
+.pharmacy-status {
+    display: flex;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-badge.open {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.closed {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.pharmacy-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2563eb;
+    margin-bottom: 4px;
+}
+
+.pharmacy-distance {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.pharmacy-address {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* 약국 상세 모달 */
+.pharmacy-detail-modal {
+    position: fixed;
+    bottom: 72px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    width: 100%;
+    max-width: 375px;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    max-height: 50vh;
+    z-index: 1000;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.pharmacy-detail-modal.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+.modal-handle {
+    width: 40px;
+    height: 4px;
+    background: #d1d5db;
+    border-radius: 2px;
+    margin: 12px auto 0;
+    cursor: pointer;
+}
+
+.modal-content {
+    padding: 20px;
+}
+
+.modal-header {
+    margin-bottom: 20px;
+}
+
+.pharmacy-title-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.pharmacy-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.pharmacy-hours {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.pharmacy-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+/* 모달 액션 버튼들 */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.btn-phone, .btn-copy {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-phone:hover, .btn-copy:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+/* 메인 액션 버튼 */
+.modal-main-action {
+    margin-top: 20px;
+}
+
+.btn-send-prescription {
+    width: 100%;
+    height: 56px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-send-prescription:hover {
+    background: #1d4ed8;
+}
+
+/* 확인 모달 */
+.confirm-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.confirm-modal.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.confirm-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.confirm-content {
+    position: relative;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 320px;
+    width: 90%;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+
+.confirm-modal.show .confirm-content {
+    transform: scale(1);
+}
+
+.confirm-header {
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.confirm-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.confirm-body {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.confirm-body p {
+    font-size: 16px;
+    color: #6b7280;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-cancel, .btn-confirm {
+    flex: 1;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-cancel {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.btn-cancel:hover {
+    background: #e5e7eb;
+}
+
+.btn-confirm {
+    background: #2563eb;
+    color: #fff;
+}
+
+.btn-confirm:hover {
+    background: #1d4ed8;
+}
+
+/* 에러 메시지 */
+.error-message {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 12px 20px;
+    margin: 16px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+/* 빈 상태 */
+.empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: #6b7280;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.empty-text {
+    font-size: 16px;
+    font-weight: 600;
+}
+
