@@ -39,70 +39,45 @@ function BottomNav() {
   const navigate = useNavigate();
   const currentPath = location.pathname || "/";
 
+  const handleTabClick = (path) => {
+    navigate(path);
+  };
+
   return (
-    <nav className="border-t border-slate-200 bg-white shrink-0">
-      <div className="mx-auto max-w-[393px]">
-        <div className="grid grid-cols-5 items-center">
-          {TABS.map((tab) => {
-            // 홈(/)은 정확히 일치, 나머지는 prefix로 체크
-            const isActive =
-              tab.path === "/"
-                ? currentPath === "/"
-                : currentPath.startsWith(tab.path);
+    <nav
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[393px] h-16 bg-white border-t border-slate-200 flex items-center justify-around px-2 z-50"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+    >
+      {TABS.map((tab) => {
+        const isActive = currentPath === tab.path;
+        const icon = isActive
+          ? TAB_ICONS[tab.id].active
+          : TAB_ICONS[tab.id].inactive;
 
-            const icon = TAB_ICONS[tab.id];
-            const iconSrc = icon
-              ? isActive
-                ? icon.active
-                : icon.inactive
-              : null;
-
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => navigate(tab.path)}
-                className="relative flex flex-col items-center justify-center py-1.5 text-xs"
-              >
-                {/* 활성 탭 하이라이트 배경 (원형 느낌) */}
-                {isActive && (
-                  <span className="absolute inset-y-0 left-1/2 -translate-x-1/2 my-0.5 h-12 w-12 rounded-full bg-sky-50" />
-                )}
-
-                {/* 아이콘 */}
-                <span className="relative flex items-center justify-center">
-                  {iconSrc ? (
-                    <img
-                      src={iconSrc}
-                      alt={tab.label}
-                      className="relative z-10 h-6 w-6 object-contain"
-                    />
-                  ) : (
-                    <span
-                      className={`relative z-10 flex h-5 w-5 items-center justify-center rounded-full border text-[10px] ${
-                        isActive
-                          ? "border-sky-500 text-sky-500 bg-white"
-                          : "border-slate-300 text-slate-400 bg-slate-50"
-                      }`}
-                    >
-                      ●
-                    </span>
-                  )}
-                </span>
-
-                {/* 라벨 */}
-                <span
-                  className={`relative z-10 mt-0.5 text-[11px] font-medium ${
-                    isActive ? "text-sky-600" : "text-slate-400"
-                  }`}
-                >
-                  {tab.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+        return (
+          <button
+            key={tab.id}
+            onClick={() => handleTabClick(tab.path)}
+            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 cursor-pointer transition-colors"
+            aria-label={tab.label}
+            aria-current={isActive ? "page" : undefined}
+          >
+            <img
+              src={icon}
+              alt=""
+              className="w-6 h-6 object-contain"
+              aria-hidden="true"
+            />
+            <span
+              className={`text-[11px] font-medium ${
+                isActive ? "text-blue-600" : "text-slate-400"
+              }`}
+            >
+              {tab.label}
+            </span>
+          </button>
+        );
+      })}
     </nav>
   );
 }

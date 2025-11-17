@@ -1,6 +1,6 @@
 // src/pages/Home.jsx
 import React from "react";
-import AppLayout from "../components/layout/AppLayout";
+import AppLayout from "../../components/layout/AppLayout";
 
 function HomeContent() {
   const summary = {
@@ -161,7 +161,7 @@ function HomeContent() {
   );
 }
 
-function Home() {
+function HomePage() {
   // 홈은 상단 헤더 숨기고(이미지부터 나오게)
   const headerProps = { title: "홈" };
 
@@ -172,4 +172,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default HomePage;

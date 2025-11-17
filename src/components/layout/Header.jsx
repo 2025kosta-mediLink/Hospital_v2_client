@@ -9,7 +9,12 @@ import { useNavigate } from "react-router-dom";
  * - 뒤로가기 버튼: 항상 표시, history.back()으로 바로 전 페이지로 이동
  * - X 버튼: 항상 표시, 홈(/)으로 이동
  */
-function Header({ title, leftSlot, rightSlot, className = "" }) {
+function Header({
+  title,
+  leftSlot,
+  rightSlot,
+  className = "",
+}) {
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -17,27 +22,27 @@ function Header({ title, leftSlot, rightSlot, className = "" }) {
   };
 
   const handleClose = () => {
-    navigate("/");
+    navigate('/');
   };
 
   return (
     <header
       className={`flex items-center justify-between h-16 px-4 border-b border-slate-200 bg-white shrink-0 ${className}`}
-      style={{
-        backgroundColor: "#ffffff",
-        zIndex: 1000,
-        position: "sticky",
+      style={{ 
+        backgroundColor: '#ffffff', 
+        zIndex: 1000, 
+        position: 'sticky',
         top: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        height: "64px",
-        padding: "0 16px",
-        borderBottom: "1px solid #e5e7eb",
-        minHeight: "64px",
-        width: "100%",
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        height: '64px',
+        padding: '0 16px',
+        borderBottom: '1px solid #e5e7eb',
+        minHeight: '64px',
+        width: '100%',
         flexShrink: 0,
-        boxSizing: "border-box",
+        boxSizing: 'border-box'
       }}
     >
       {/* 왼쪽 영역: 우선순위 - leftSlot > 기본 뒤로가기 버튼 */}

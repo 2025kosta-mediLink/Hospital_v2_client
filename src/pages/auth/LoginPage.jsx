@@ -1,9 +1,9 @@
 // src/pages/Login.jsx
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import AppLayout from "../components/layout/AppLayout";
+import AppLayout from "../../components/layout/AppLayout";
 
-function Login() {
+function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -40,7 +40,7 @@ function Login() {
 
   const handleGoSignUp = (e) => {
     e.preventDefault();
-    navigate("/signup"); // 추후 약관 동의 라우트로 변경 가능
+    navigate("/consent"); // 추후 약관 동의 라우트로 변경 가능
   };
 
   return (
@@ -119,4 +119,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default LoginPage;
