@@ -24,12 +24,13 @@
     padding: 0px;
     gap: 8px;
     width: 100%;
+    max-width: 343px;
     height: 29px;
     border-radius: 0px;
 }
 
 .section-title {
-    width: 100%;
+    width: 343px;
     height: 20px;
     font-family: 'Inter';
     font-style: normal;
@@ -44,7 +45,7 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 0px;
-    width: 100%;
+    width: 343px;
     height: 1px;
     background: #E9ECEF;
     border-radius: 0px;
@@ -58,6 +59,7 @@
     padding: 0px;
     gap: 16px;
     width: 100%;
+    max-width: 343px;
     border-radius: 0px;
 }
 
@@ -69,6 +71,7 @@
     padding: 20px;
     gap: 16px;
     width: 100%;
+    max-width: 343px;
     min-height: 175px;
     background: #FFFFFF;
     border: 1px solid #E9ECEF;
@@ -83,7 +86,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0px;
-    width: 100%;
+    width: 303px;
     height: 17px;
     border-radius: 0px;
 }
@@ -121,7 +124,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0px;
-    width: 100%;
+    width: 303px;
     height: 17px;
     border-radius: 0px;
 }
@@ -133,7 +136,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0px;
-    width: 100%;
+    width: 303px;
     height: 17px;
     border-radius: 0px;
 }
@@ -145,7 +148,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0px;
-    width: 100%;
+    width: 303px;
     height: 36px;
     border-radius: 0px;
 }
@@ -158,7 +161,7 @@
     padding: 0px;
     gap: 8px;
     margin: 0 auto;
-    width: auto;
+    width: 188px;
     height: 36px;
     border-radius: 0px;
 }

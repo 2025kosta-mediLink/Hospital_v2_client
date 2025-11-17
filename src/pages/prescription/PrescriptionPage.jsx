@@ -59,6 +59,12 @@ function PrescriptionPage() {
       hideHeader={false}
     >
       <div className="container">
+        {/* Section Header */}
+        <div className="section-header">
+          <div className="section-title">출력 가능한 처방전 목록</div>
+          <div className="divider"></div>
+        </div>
+
         {listQuery.isLoading && <PrescriptionLoading />}
         {listQuery.error && (
           <PrescriptionError message={`처방전을 불러오지 못했습니다: ${listQuery.error.message || '알 수 없는 오류'}`} />
@@ -73,20 +79,22 @@ function PrescriptionPage() {
               onView={handleViewPrescription}
               onStatusCheck={handleStatusCheck}
             />
-            
-            {/* Find Pharmacy Button */}
-            <div className="pharmacy-btn-container">
-              <button
-                className="find-pharmacy-btn"
-                onClick={handleFindPharmacy}
-                disabled={selectedIds.size === 0}
-              >
-                약국 찾기
-              </button>
-            </div>
           </>
         )}
       </div>
+
+      {/* Find Pharmacy Button */}
+      {listQuery.data && Array.isArray(listQuery.data) && listQuery.data.length > 0 && (
+        <div className="pharmacy-btn-container">
+          <button
+            className="find-pharmacy-btn"
+            onClick={handleFindPharmacy}
+            disabled={selectedIds.size === 0}
+          >
+            약국 찾기
+          </button>
+        </div>
+      )}
     </AppLayout>
   );
 }
