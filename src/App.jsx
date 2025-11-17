@@ -1,9 +1,15 @@
-import "./App.css";
 import React from "react";
+import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
+import Login from "./pages/Login";
 
 function App() {
-  return <Home />;
+  return (
+    <Routes>
+      <Route path="/v2/home" element={<Home />} />
+      <Route path="/v2/auth/login" element={<Login />} />
+    </Routes>
+  );
 }
 
 export default App;

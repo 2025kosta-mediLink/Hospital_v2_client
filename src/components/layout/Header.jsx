@@ -1,51 +1,74 @@
 // src/components/layout/Header.jsx
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 /**
  * 공통 Header
- * - title: 가운데 타이틀 텍스트
- * - leftSlot / rightSlot: 아이콘, 버튼 등 커스텀 엘리먼트
- * - onBack / onClose: 전달되면 기본 아이콘 버튼 렌더링
+ * - title: 가운데 타이틀 텍스트 (선택사항)
+ * - leftSlot / rightSlot: 아이콘, 버튼 등 커스텀 엘리먼트 (선택사항)
+ * - 뒤로가기 버튼: 항상 표시, history.back()으로 바로 전 페이지로 이동
+ * - X 버튼: 항상 표시, 홈(/)으로 이동
  */
-function Header({
-  title,
-  leftSlot,
-  rightSlot,
-  onBack,
-  onClose,
-  className = "",
-}) {
+function Header({ title, leftSlot, rightSlot, className = "" }) {
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    window.history.back();
+  };
+
+  const handleClose = () => {
+    navigate("/");
+  };
+
   return (
     <header
       className={`flex items-center justify-between h-16 px-4 border-b border-slate-200 bg-white shrink-0 ${className}`}
+      style={{
+        backgroundColor: "#ffffff",
+        zIndex: 1000,
+        position: "sticky",
+        top: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        height: "64px",
+        padding: "0 16px",
+        borderBottom: "1px solid #e5e7eb",
+        minHeight: "64px",
+        width: "100%",
+        flexShrink: 0,
+        boxSizing: "border-box",
+      }}
     >
-      {/* 왼쪽 영역: 우선순위 - leftSlot > onBack */}
+      {/* 왼쪽 영역: 우선순위 - leftSlot > 기본 뒤로가기 버튼 */}
       <div className="flex items-center justify-start w-16">
         {leftSlot ? (
           leftSlot
-        ) : onBack ? (
+        ) : (
           <button
             type="button"
-            onClick={onBack}
+            onClick={handleBack}
             aria-label="뒤로가기"
-            className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 active:scale-95 transition"
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-slate-100 active:scale-95 transition"
           >
             <svg
               viewBox="0 0 24 24"
-              className="h-5 w-5 text-slate-500"
+              width="24"
+              height="24"
+              fill="none"
+              className="text-slate-500"
               aria-hidden="true"
             >
               <path
                 d="M15 18L9 12L15 6"
-                fill="none"
                 stroke="currentColor"
-                strokeWidth="1.8"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
           </button>
-        ) : null}
+        )}
       </div>
 
       {/* 가운데 타이틀 */}
@@ -57,33 +80,35 @@ function Header({
         )}
       </div>
 
-      {/* 오른쪽 영역: 우선순위 - rightSlot > onClose */}
+      {/* 오른쪽 영역: 우선순위 - rightSlot > 기본 X 버튼 */}
       <div className="flex items-center justify-end w-16">
         {rightSlot ? (
           rightSlot
-        ) : onClose ? (
+        ) : (
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="홈으로"
-            className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 active:scale-95 transition"
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-slate-100 active:scale-95 transition"
           >
             <svg
               viewBox="0 0 24 24"
-              className="h-5 w-5 text-slate-500"
+              width="24"
+              height="24"
+              fill="none"
+              className="text-slate-500"
               aria-hidden="true"
             >
               <path
                 d="M18 6L6 18M6 6L18 18"
-                fill="none"
                 stroke="currentColor"
-                strokeWidth="1.8"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
           </button>
-        ) : null}
+        )}
       </div>
     </header>
   );
