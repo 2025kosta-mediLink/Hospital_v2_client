@@ -55,8 +55,8 @@ function PharmacySearchPage() {
   });
 
   const sendMutation = useMutation({
-    mutationFn: (pharmacyId) =>
-      pharmacyApi.send({ pharmacyId, prescriptionIds }),
+    mutationFn: ({ pharmacyId, pharmacyName }) =>
+      pharmacyApi.send({ pharmacyId, pharmacyName, prescriptionIds }),
     onSuccess: (response) => {
       // response에서 dispensingId 추출
       const dispensingId = response.dispensingId;
@@ -67,10 +67,11 @@ function PharmacySearchPage() {
       // 디버깅: 전달할 약국 정보 확인
       console.log('전달할 약국 정보:', selectedPharmacy);
       
-      // 조제 현황 페이지로 이동 (약국 정보 전달)
+      // 조제 현황 페이지로 이동 (약국 정보 및 처방전 ID 전달)
       navigate(`/dispensing?dispensingId=${dispensingId}`, {
         state: {
-          pharmacy: selectedPharmacy // 약국 정보 전달 (위도, 경도 포함)
+          pharmacy: selectedPharmacy, // 약국 정보 전달 (위도, 경도 포함)
+          prescriptionIds: prescriptionIds // 처방전 ID 목록 전달
         }
       });
     },
@@ -90,7 +91,10 @@ function PharmacySearchPage() {
 
   const handleConfirmSend = () => {
     if (selectedPharmacy) {
-      sendMutation.mutate(selectedPharmacy.pharmacyId);
+      sendMutation.mutate({
+        pharmacyId: selectedPharmacy.pharmacyId,
+        pharmacyName: selectedPharmacy.name || selectedPharmacy.pharmacyName
+      });
     }
   };
 

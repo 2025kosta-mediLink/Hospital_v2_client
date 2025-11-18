@@ -10,7 +10,7 @@ export const prescriptionApi = {
   },
   
   async updateStatus(prescriptionId, payload) {
-    await apiClient.post(`/prescriptions/${prescriptionId}/status`, payload);
+    await apiClient.patch(`/prescriptions/${prescriptionId}/status`, payload);
   }
 };
 

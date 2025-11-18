@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { dispensingApi } from '../../api/dispensing';
 import { pharmacyApi } from '../../api/pharmacy';
+import { prescriptionApi } from '../../api/prescription';
 import AppLayout from '../../components/layout/AppLayout';
 import DispensingStatusContainer from './DispensingStatusContainer';
 import ReceiptConfirmModal from '../../components/dispensing/ReceiptConfirmModal';
@@ -13,11 +14,18 @@ function DispensingStatusPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const queryClient = useQueryClient();
   const dispensingId = searchParams.get('dispensingId') || searchParams.get('prescriptionId');
+  const prescriptionId = searchParams.get('prescriptionId') || location.state?.prescriptionIds?.[0];
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   
-  // 약국 검색 페이지에서 전달받은 약국 정보
+  // 약국 검색 페이지에서 전달받은 약국 정보 및 처방전 ID
   const pharmacyFromState = location.state?.pharmacy;
+  const prescriptionIdsFromState = location.state?.prescriptionIds;
+  
+  // 디버깅: 전달받은 정보 확인
+  console.log('전달받은 prescriptionIds:', prescriptionIdsFromState);
+  console.log('사용할 prescriptionId:', prescriptionId);
 
   const statusQuery = useQuery({
     queryKey: ['dispensing', dispensingId],
@@ -31,10 +39,67 @@ function DispensingStatusPage() {
   console.log('약국 정보 (statusQuery):', statusQuery.data);
 
   const completeMutation = useMutation({
-    mutationFn: () => dispensingApi.complete(dispensingId),
+    mutationFn: async () => {
+      try {
+        // 1. 수령 완료 처리
+        console.log('수령 완료 처리 시작, dispensingId:', dispensingId);
+        await dispensingApi.complete(dispensingId);
+        console.log('수령 완료 처리 성공');
+        
+        // 2. 처방전 상태 업데이트 (약국 이름, 수령 날짜)
+        // 모든 처방전 ID에 대해 업데이트
+        const prescriptionIdsToUpdate = prescriptionIdsFromState || (prescriptionId ? [prescriptionId] : []);
+        const pharmacyName = pharmacyFromState?.name || statusQuery.data?.pharmacyName;
+        const receivedAt = new Date().toISOString();
+        
+        console.log('처방전 업데이트 시작, prescriptionIds:', prescriptionIdsToUpdate);
+        console.log('약국 이름:', pharmacyName);
+        console.log('수령 날짜:', receivedAt);
+        
+        if (prescriptionIdsToUpdate.length > 0) {
+          // 모든 처방전에 대해 병렬로 업데이트
+          await Promise.all(
+            prescriptionIdsToUpdate.map(async (id) => {
+              try {
+                // prescriptionId를 숫자로 변환
+                const prescriptionIdNum = typeof id === 'string' ? parseInt(id, 10) : id;
+                if (isNaN(prescriptionIdNum)) {
+                  console.error('Invalid prescriptionId:', id);
+                  return;
+                }
+                console.log('처방전 업데이트 중, prescriptionId:', prescriptionIdNum);
+                await prescriptionApi.updateStatus(prescriptionIdNum, {
+                  pharmacyName,
+                  completedAt: receivedAt
+                });
+                console.log('처방전 업데이트 성공, prescriptionId:', prescriptionIdNum);
+              } catch (error) {
+                console.error('처방전 업데이트 실패, prescriptionId:', id, error);
+                throw error;
+              }
+            })
+          );
+        } else {
+          console.warn('업데이트할 처방전 ID가 없습니다.');
+        }
+      } catch (error) {
+        console.error('수령 완료 처리 중 오류 발생:', error);
+        throw error;
+      }
+    },
     onSuccess: () => {
       statusQuery.refetch();
       setIsReceiptModalOpen(false);
+      
+      // 처방전 목록 쿼리 무효화하여 새로고침
+      queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
+      
+      // 처방전 목록 페이지로 돌아가기
+      navigate('/prescription');
+    },
+    onError: (error) => {
+      console.error('수령 완료 처리 실패:', error);
+      alert('수령 완료 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
     },
   });
 
