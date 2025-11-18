@@ -63,6 +63,10 @@ function PharmacySearchPage() {
       // 모달 닫기
       setIsModalOpen(false);
       setIsConfirmModalOpen(false);
+      
+      // 디버깅: 전달할 약국 정보 확인
+      console.log('전달할 약국 정보:', selectedPharmacy);
+      
       // 조제 현황 페이지로 이동 (약국 정보 전달)
       navigate(`/dispensing?dispensingId=${dispensingId}`, {
         state: {
