@@ -17,10 +17,10 @@ function AppLayout({ headerProps, hideHeader = false, children }) {
         {/* 상단 헤더 - hideHeader가 false일 때만 표시 */}
         {!hideHeader && <Header {...headerProps} />}
 
-        {/* 가운데만 스크롤 - BottomNav 높이만큼 padding-bottom 추가 */}
-        <main className="flex-1 overflow-y-auto pb-16">{children}</main>
+        {/* 가운데만 스크롤 - 네비게이션 바 높이만큼 padding-bottom 추가 */}
+        <main className="flex-1 overflow-y-auto" style={{ paddingBottom: '72px' }}>{children}</main>
 
-        {/* 하단 네비게이션 - fixed로 고정 */}
+        {/* 하단 네비게이션 - 고정 */}
         <BottomNav />
       </div>
     </div>

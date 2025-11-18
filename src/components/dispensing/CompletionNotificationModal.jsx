@@ -23,10 +23,18 @@ function CompletionNotificationModal({ isOpen, completedAt, onConfirm }) {
       <div className="completion-notification-overlay"></div>
       <div className="completion-notification-content">
         <div className="completion-notification-character">
-          <div className="medicine-bag">💊</div>
+          <img src="/images/pharmacist/pharmacist.png" alt="약사" className="pharmacist-image" />
         </div>
         <div className="completion-notification-time">
-          {completedAt ? formatDate(completedAt) : new Date().toLocaleString('ko-KR')}
+          {completedAt ? formatDate(completedAt) : (() => {
+            const now = new Date();
+            const year = now.getFullYear().toString().slice(-2);
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${year}.${month}.${day}.${hours}:${minutes}`;
+          })()}
         </div>
         <div className="completion-notification-message">약 조제가 완료되었습니다!</div>
         <button className="completion-notification-btn" onClick={onConfirm}>

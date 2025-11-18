@@ -6,7 +6,12 @@ const TABS = [
   { id: "reservation", label: "예약", path: "/reservation/departments" },
   { id: "reception", label: "접수", path: "/reception/departments" },
   { id: "home", label: "홈", path: "/" },
-  { id: "prescription", label: "처방전", path: "/prescription" },
+  {
+    id: "prescription",
+    label: "처방전",
+    path: "/prescription",
+    relatedPaths: ["/prescription", "/pharmacy", "/dispensing"],
+  },
   { id: "mypage", label: "마이페이지", path: "/mypage" },
 ];
 
@@ -50,62 +55,75 @@ function BottomNav() {
     }
   };
 
-  // ✅ 활성화 상태 체크 함수
-  const isTabActive = (tabId) => {
-    // 예약 플로우 전체 활성화
-    if (tabId === "reservation") {
-      return (
-        currentPath.startsWith("/reservation/") ||
-        currentPath === "/reservation"
-      );
+  // 활성화 상태 체크 함수
+  const isTabActive = (tab) => {
+    // 홈은 정확히 일치
+    if (tab.path === "/") {
+      return currentPath === "/";
     }
 
-    // 접수 플로우 전체 활성화
-    if (tabId === "reception") {
-      return (
-        currentPath.startsWith("/reception/") || currentPath === "/reception"
-      );
+    // 처방전 탭은 관련 경로들에서 모두 활성화
+    if (tab.relatedPaths) {
+      return tab.relatedPaths.some((path) => currentPath.startsWith(path));
     }
 
-    // 나머지 탭은 정확한 경로 매칭
-    return currentPath === TABS.find((tab) => tab.id === tabId)?.path;
+    // 나머지는 prefix로 체크
+    return currentPath.startsWith(tab.path);
   };
 
   return (
     <nav
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[393px] h-16 bg-white border-t border-slate-200 flex items-center justify-around px-2 z-50"
-      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      className="border-t border-slate-200 bg-white shrink-0"
+      style={{
+        position: "fixed",
+        bottom: 0,
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "100%",
+        maxWidth: "393px",
+        zIndex: 1000,
+        backgroundColor: "#ffffff",
+      }}
     >
-      {TABS.map((tab) => {
-        const isActive = isTabActive(tab.id); // ✅ 변경
-        const icon = isActive
-          ? TAB_ICONS[tab.id].active
-          : TAB_ICONS[tab.id].inactive;
+      <div className="mx-auto max-w-[393px]">
+        <div className="grid grid-cols-5 items-center">
+          {TABS.map((tab) => {
+            const isActive = isTabActive(tab);
+            const icon = TAB_ICONS[tab.id];
+            const iconSrc = icon
+              ? isActive
+                ? icon.active
+                : icon.inactive
+              : null;
 
-        return (
-          <button
-            key={tab.id}
-            onClick={() => handleTabClick(tab)}
-            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 cursor-pointer transition-colors"
-            aria-label={tab.label}
-            aria-current={isActive ? "page" : undefined}
-          >
-            <img
-              src={icon}
-              alt=""
-              className="w-6 h-6 object-contain"
-              aria-hidden="true"
-            />
-            <span
-              className={`text-[11px] font-medium ${
-                isActive ? "text-blue-600" : "text-slate-400"
-              }`}
-            >
-              {tab.label}
-            </span>
-          </button>
-        );
-      })}
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleTabClick(tab)}
+                className="flex flex-col items-center justify-center gap-1 flex-1 py-2 cursor-pointer transition-colors"
+                aria-label={tab.label}
+                aria-current={isActive ? "page" : undefined}
+              >
+                {iconSrc && (
+                  <img
+                    src={iconSrc}
+                    alt=""
+                    className="w-6 h-6 object-contain"
+                    aria-hidden="true"
+                  />
+                )}
+                <span
+                  className={`text-[11px] font-medium ${
+                    isActive ? "text-blue-600" : "text-slate-400"
+                  }`}
+                >
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </nav>
   );
 }
