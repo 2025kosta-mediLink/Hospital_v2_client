@@ -65,6 +65,11 @@ function PharmacySearchPage() {
   const handlePharmacyClick = (pharmacy) => {
     setSelectedPharmacy(pharmacy);
     setIsModalOpen(true);
+    // 선택된 약국 위치로 지도 중심 이동
+    if (pharmacy.latitude && pharmacy.longitude) {
+      setLatitude(pharmacy.latitude);
+      setLongitude(pharmacy.longitude);
+    }
   };
 
   const handleSendPrescription = () => {
@@ -88,6 +93,20 @@ function PharmacySearchPage() {
     return true;
   }) || [];
 
+  // 지도에 표시할 약국 리스트 (선택된 약국이 있으면 해당 약국만, 없으면 전체)
+  const displayPharmacies = selectedPharmacy && isModalOpen
+    ? [selectedPharmacy]
+    : filteredPharmacies;
+
+  // 모달 닫기 핸들러
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedPharmacy(null);
+    // 지도 중심을 다시 병원 위치로 복원
+    setLatitude(hospitalLatitude);
+    setLongitude(hospitalLongitude);
+  };
+
   return (
     <AppLayout
       headerProps={{
@@ -106,31 +125,35 @@ function PharmacySearchPage() {
           <KakaoMap
             latitude={latitude}
             longitude={longitude}
-            pharmacies={filteredPharmacies}
+            pharmacies={displayPharmacies}
             onPharmacyClick={handlePharmacyClick}
             userLocation={userLocation}
             hospitalLocation={null}
           />
         </div>
 
-        {/* 약국 리스트 오버레이 */}
-        {listQuery.isLoading && <PharmacyLoading />}
-        {listQuery.error && (
-          <PharmacyError message={`약국 정보를 불러오지 못했습니다: ${listQuery.error.message || '알 수 없는 오류'}`} />
-        )}
-        {listQuery.data && filteredPharmacies.length === 0 && <PharmacyEmpty />}
-        {listQuery.data && filteredPharmacies.length > 0 && (
-          <PharmacyList
-            pharmacies={filteredPharmacies}
-            onSelect={handlePharmacyClick}
-          />
+        {/* 약국 리스트 오버레이 - 모달이 열려있을 때는 숨김 */}
+        {!isModalOpen && !isConfirmModalOpen && (
+          <>
+            {listQuery.isLoading && <PharmacyLoading />}
+            {listQuery.error && (
+              <PharmacyError message={`약국 정보를 불러오지 못했습니다: ${listQuery.error.message || '알 수 없는 오류'}`} />
+            )}
+            {listQuery.data && filteredPharmacies.length === 0 && <PharmacyEmpty />}
+            {listQuery.data && filteredPharmacies.length > 0 && (
+              <PharmacyList
+                pharmacies={filteredPharmacies}
+                onSelect={handlePharmacyClick}
+              />
+            )}
+          </>
         )}
 
         {/* 약국 상세 모달 */}
         <PharmacyDetailModal
           pharmacy={selectedPharmacy}
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={handleModalClose}
           onSend={handleSendPrescription}
         />
 

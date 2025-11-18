@@ -238,10 +238,10 @@
 .pharmacy-detail-modal {
     position: fixed;
     bottom: 72px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100%);
+    left: 0;
+    right: 0;
+    transform: translateY(100%);
     width: 100%;
-    max-width: 375px;
     background: #fff;
     border-radius: 20px 20px 0 0;
     max-height: 50vh;
@@ -251,7 +251,7 @@
 }
 
 .pharmacy-detail-modal.show {
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
 }
 
 .modal-handle {
