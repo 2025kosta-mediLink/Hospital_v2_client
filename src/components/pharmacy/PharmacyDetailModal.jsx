@@ -12,7 +12,7 @@ function PharmacyDetailModal({ pharmacy, isOpen, onClose, onSend }) {
       <div className="modal-content">
         <div className="modal-header">
           <div className="pharmacy-title-section">
-            <h3 className="pharmacy-name">{pharmacy.pharmacyName}</h3>
+            <h3 className="pharmacy-name">{pharmacy.name || pharmacy.pharmacyName}</h3>
             <span className={`status-badge ${pharmacy.open ? 'open' : 'closed'}`}>
               {pharmacy.open ? '영업중' : '영업종료'}
             </span>

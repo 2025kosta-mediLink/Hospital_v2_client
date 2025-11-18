@@ -7,9 +7,9 @@ function PharmacyListItem({ pharmacy, onClick }) {
   return (
     <div className="pharmacy-list-item" onClick={onClick}>
       <div className="pharmacy-info">
-        <div className="pharmacy-name">{pharmacy.pharmacyName}</div>
+        <div className="pharmacy-name">{pharmacy.name || pharmacy.pharmacyName}</div>
         <div className="pharmacy-distance">
-          {pharmacy.distanceKm ? `${(pharmacy.distanceKm * 1000).toFixed(0)}m` : ''}
+          {pharmacy.distanceMeters ? `${pharmacy.distanceMeters.toFixed(0)}m` : ''}
         </div>
         <div className="pharmacy-address">
           <span>📍</span>
