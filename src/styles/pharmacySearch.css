@@ -2,8 +2,8 @@
 
 /* 필터 바 */
 .filter-bar {
-    position: absolute;
-    top: 56px;
+    position: relative;
+    top: 0;
     left: 0;
     right: 0;
     height: 44px;
@@ -14,6 +14,7 @@
     gap: 12px;
     padding: 0 16px;
     z-index: 999;
+    flex-shrink: 0;
 }
 
 .filter-item {
@@ -36,7 +37,7 @@
     padding: 8px 12px;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 20px;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     color: #111827;
     cursor: pointer;
@@ -50,6 +51,17 @@
     border-radius: 16px;
     font-size: 12px;
     font-weight: 600;
+    cursor: pointer;
+    border: none;
+}
+
+.filter-tag-dropdown {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #111827;
     cursor: pointer;
     border: none;
 }
@@ -114,14 +126,36 @@
 /* 약국 리스트 오버레이 */
 .pharmacy-list-overlay {
     position: absolute;
+    top: calc(44px + 55%);
     bottom: 0;
     left: 0;
     right: 0;
     background: #fff;
     border-radius: 20px 20px 0 0;
-    max-height: 50vh;
     z-index: 100;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db #f3f4f6;
+}
+
+.pharmacy-list-overlay::-webkit-scrollbar {
+    width: 6px;
+}
+
+.pharmacy-list-overlay::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 3px;
+}
+
+.pharmacy-list-overlay::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.pharmacy-list-overlay::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
 }
 
 .list-header {
@@ -140,30 +174,7 @@
 }
 
 .pharmacy-list {
-    max-height: 35vh;
-    overflow-y: auto;
     padding-bottom: 100px;
-    scroll-behavior: smooth;
-    scrollbar-width: thin;
-    scrollbar-color: #d1d5db #f3f4f6;
-}
-
-.pharmacy-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.pharmacy-list::-webkit-scrollbar-track {
-    background: #f3f4f6;
-    border-radius: 3px;
-}
-
-.pharmacy-list::-webkit-scrollbar-thumb {
-    background: #d1d5db;
-    border-radius: 3px;
-}
-
-.pharmacy-list::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
 }
 
 .pharmacy-list-item {
@@ -238,10 +249,10 @@
 .pharmacy-detail-modal {
     position: fixed;
     bottom: 72px;
-    left: 0;
-    right: 0;
-    transform: translateY(100%);
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
     width: 100%;
+    max-width: 393px;
     background: #fff;
     border-radius: 20px 20px 0 0;
     max-height: 50vh;
@@ -251,7 +262,7 @@
 }
 
 .pharmacy-detail-modal.show {
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
 }
 
 .modal-handle {
