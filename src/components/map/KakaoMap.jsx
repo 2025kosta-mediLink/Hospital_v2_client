@@ -35,9 +35,16 @@ function KakaoMap({
       if (useIndexScript) {
         // index.html에서 이미 스크립트를 로드하고 있으므로, 로드될 때까지 대기
         const checkKakao = () => {
-          if (window.kakao && window.kakao.maps) {
+          if (window.kakao && window.kakao.maps && window.kakao.maps.services && window.kakao.maps.services.Directions) {
+            console.log('카카오 지도 API 및 Directions 서비스 로드 완료');
             resolve();
           } else {
+            console.log('카카오 지도 API 로드 대기 중...', {
+              kakao: !!window.kakao,
+              maps: !!(window.kakao && window.kakao.maps),
+              services: !!(window.kakao && window.kakao.maps && window.kakao.maps.services),
+              Directions: !!(window.kakao && window.kakao.maps && window.kakao.maps.services && window.kakao.maps.services.Directions)
+            });
             setTimeout(checkKakao, 100);
           }
         };
@@ -337,274 +344,190 @@ function KakaoMap({
     }
   }, [onRouteInfoUpdate]);
 
-  /** 경로 표시 (참고 폴더의 route-service.js 로직 적용) */
-  const updateRoute = useCallback(() => {
+  /** 경로 표시 - REST API 기반 */
+  const updateRoute = useCallback(async () => {
     if (!mapInstanceRef.current || !route) return;
 
     if (polylineRef.current) {
       polylineRef.current.setMap(null);
+      polylineRef.current = null;
     }
 
-    // Directions 서비스 사용 가능 여부 확인
-    if (!window.kakao || !window.kakao.maps || !window.kakao.maps.services || !window.kakao.maps.services.Directions) {
-      console.warn('Directions 서비스가 사용 불가능합니다. 직선 경로로 대체합니다.');
-      // 직선 경로로 대체
-      const path = [
-        new window.kakao.maps.LatLng(route.start.latitude, route.start.longitude),
-        new window.kakao.maps.LatLng(route.end.latitude, route.end.longitude),
-      ];
+    try {
+      // 백엔드 API에 맞게 POST 요청
+      const requestBody = {
+        startLatitude: route.start.latitude,
+        startLongitude: route.start.longitude,
+        endLatitude: route.end.latitude,
+        endLongitude: route.end.longitude,
+        type: 'foot' // 도보 경로
+      };
+
+      const res = await fetch('/api/kakao/route', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!res.ok) {
+        throw new Error(`route api error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log('경로 API 응답 전체:', JSON.stringify(data, null, 2));
+      console.log('경로 API 응답 (간단):', data);
+
+      // 백엔드 응답 구조에 맞게 경로 데이터 추출
+      if (!data || !data.routes || data.routes.length === 0) {
+        console.error('경로 데이터가 없습니다. 응답:', data);
+        throw new Error('경로 데이터가 없습니다.');
+      }
+
+      const routeData = data.routes[0];
+      console.log('첫 번째 경로 데이터:', routeData);
+      
+      if (!routeData.sections || routeData.sections.length === 0) {
+        console.error('경로 섹션이 없습니다. routeData:', routeData);
+        throw new Error('경로 섹션이 없습니다.');
+      }
+
+      console.log('섹션 개수:', routeData.sections.length);
+      routeData.sections.forEach((section, idx) => {
+        console.log(`섹션 ${idx}:`, section);
+        console.log(`섹션 ${idx} roads:`, section.roads);
+      });
+
+      // 경로 포인트 추출 (카카오 모빌리티 API 응답 구조에 맞게)
+      const path = [];
+      const bounds = new window.kakao.maps.LatLngBounds();
+      
+      // 출발지와 도착지 추가
+      const start = new window.kakao.maps.LatLng(route.start.latitude, route.start.longitude);
+      const end = new window.kakao.maps.LatLng(route.end.latitude, route.end.longitude);
+      bounds.extend(start);
+      bounds.extend(end);
+
+      // 섹션에서 경로 포인트 추출
+      let hasPathPoints = false;
+      routeData.sections.forEach((section, sectionIdx) => {
+        console.log(`섹션 ${sectionIdx} 처리 시작`);
+        if (section.roads && Array.isArray(section.roads)) {
+          console.log(`섹션 ${sectionIdx}에 ${section.roads.length}개의 도로가 있습니다.`);
+          section.roads.forEach((road, roadIdx) => {
+            console.log(`도로 ${roadIdx} 처리:`, road);
+            if (road.vertexes && Array.isArray(road.vertexes) && road.vertexes.length > 0) {
+              console.log(`도로 ${roadIdx}에 ${road.vertexes.length}개의 vertexes가 있습니다.`);
+              hasPathPoints = true;
+              for (let i = 0; i < road.vertexes.length; i += 2) {
+                if (i + 1 < road.vertexes.length) {
+                  const lng = road.vertexes[i];     // x 좌표 (경도)
+                  const lat = road.vertexes[i + 1]; // y 좌표 (위도)
+                  const point = new window.kakao.maps.LatLng(lat, lng);
+                  path.push(point);
+                  bounds.extend(point);
+                }
+              }
+            } else {
+              console.warn(`도로 ${roadIdx}에 vertexes가 없거나 배열이 아닙니다:`, road.vertexes);
+            }
+          });
+        } else {
+          console.warn(`섹션 ${sectionIdx}에 roads가 없거나 배열이 아닙니다:`, section.roads);
+        }
+      });
+
+      console.log(`추출된 경로 포인트 수: ${path.length}, hasPathPoints: ${hasPathPoints}`);
+
+      // 경로가 없으면 직선 경로로 대체
+      if (path.length < 2) {
+        console.warn('경로 포인트가 부족하여 직선 경로로 대체합니다.');
+        path.length = 0;
+        path.push(start, end);
+      } else {
+        // 경로가 있으면 출발지와 도착지도 추가
+        path.unshift(start);
+        path.push(end);
+      }
 
       const polyline = new window.kakao.maps.Polyline({
         path,
         strokeWeight: 8,
-        strokeColor: "#2563eb",
+        strokeColor: '#2563eb',
         strokeOpacity: 0.9,
-        strokeStyle: "solid",
+        strokeStyle: 'solid',
       });
 
       polyline.setMap(mapInstanceRef.current);
       polylineRef.current = polyline;
-      
-      // 지도를 경로에 맞게 자동 조정 (전체 화면에 맞게)
-      const bounds = new window.kakao.maps.LatLngBounds();
-      bounds.extend(new window.kakao.maps.LatLng(route.start.latitude, route.start.longitude));
-      bounds.extend(new window.kakao.maps.LatLng(route.end.latitude, route.end.longitude));
-      
-      // 지도 컨테이너 크기에 비례한 padding 계산
+
+      // 지도를 경로에 맞게 자동 조정
       const mapContainer = mapRef.current;
       if (mapContainer) {
         const containerWidth = mapContainer.offsetWidth;
         const containerHeight = mapContainer.offsetHeight;
-        // 화면 크기의 5% 정도를 padding으로 설정
         const padding = Math.min(containerWidth, containerHeight) * 0.05;
         mapInstanceRef.current.setBounds(bounds, padding);
       } else {
         mapInstanceRef.current.setBounds(bounds, 0);
       }
-      
-      // 직선거리 계산 및 표시
-      const distance = calculateDistance(route.start.latitude, route.start.longitude, route.end.latitude, route.end.longitude);
-      const estimatedTime = Math.round(distance / 80) * 60; // 대략적인 도보 시간 (분당 80m, 초 단위)
-      updateRouteInfo(distance, estimatedTime);
-      return;
-    }
 
-    try {
-      // Directions 서비스 생성
-      const directionsService = new window.kakao.maps.services.Directions();
-      
+      // 경로 정보 업데이트 (거리, 시간)
+      const section = routeData.sections[0];
+      const distance = section?.distance || (routeData.summary?.distance || 0);
+      const duration = section?.duration || (routeData.summary?.duration || 0);
+
+      if (onRouteInfoUpdate) {
+        onRouteInfoUpdate({
+          distance: distance,
+          duration: duration
+        });
+      }
+
+    } catch (err) {
+      console.error('경로 API 실패:', err);
+      // 실패 시 직선 경로로 대체
       const start = new window.kakao.maps.LatLng(route.start.latitude, route.start.longitude);
       const end = new window.kakao.maps.LatLng(route.end.latitude, route.end.longitude);
-
-      // 도보 경로 검색
-      directionsService.route({
-        origin: start,
-        destination: end,
-        priority: window.kakao.maps.services.Directions.Priority.SHORTEST_PATH
-      }, (result, status) => {
-        if (status === window.kakao.maps.services.Directions.Status.OK) {
-          try {
-            const routeData = result.routes[0];
-            const path = [];
-            const bounds = new window.kakao.maps.LatLngBounds();
-            
-            // 각 섹션의 도로들을 처리
-            routeData.sections.forEach((section) => {
-              section.roads.forEach((road) => {
-                // vertexes 배열에서 좌표 추출
-                if (road.vertexes && road.vertexes.length > 0) {
-                  for (let i = 0; i < road.vertexes.length; i += 2) {
-                    if (i + 1 < road.vertexes.length) {
-                      const lng = road.vertexes[i];     // x 좌표 (경도)
-                      const lat = road.vertexes[i + 1]; // y 좌표 (위도)
-                      const point = new window.kakao.maps.LatLng(lat, lng);
-                      path.push(point);
-                      bounds.extend(point);
-                    }
-                  }
-                }
-              });
-            });
-
-            if (path.length > 0) {
-              // 실제 도보 경로 Polyline 표시
-              const polyline = new window.kakao.maps.Polyline({
-                path: path,
-                strokeWeight: 8,
-                strokeColor: "#2563eb",
-                strokeOpacity: 0.9,
-                strokeStyle: "solid"
-              });
-              
-              polyline.setMap(mapInstanceRef.current);
-              polylineRef.current = polyline;
-              
-              // 지도를 경로에 맞게 자동 조정 (전체 화면에 맞게)
-              // 지도 컨테이너 크기에 비례한 padding 계산
-              const mapContainer = mapRef.current;
-              if (mapContainer) {
-                const containerWidth = mapContainer.offsetWidth;
-                const containerHeight = mapContainer.offsetHeight;
-                // 화면 크기의 5% 정도를 padding으로 설정
-                const padding = Math.min(containerWidth, containerHeight) * 0.05;
-                mapInstanceRef.current.setBounds(bounds, padding);
-              } else {
-                mapInstanceRef.current.setBounds(bounds, 0);
-              }
-              
-              // 경로 정보 업데이트 (거리, 시간)
-              const section = routeData.sections[0];
-              if (section) {
-                updateRouteInfo(section.distance, section.duration);
-              }
-            } else {
-              // 경로 포인트가 없으면 직선으로 연결
-              const simplePath = [start, end];
-              const polyline = new window.kakao.maps.Polyline({
-                path: simplePath,
-                strokeWeight: 8,
-                strokeColor: "#2563eb",
-                strokeOpacity: 0.9,
-                strokeStyle: "solid"
-              });
-              polyline.setMap(mapInstanceRef.current);
-              polylineRef.current = polyline;
-              
-              // 지도를 경로에 맞게 자동 조정 (전체 화면에 맞게)
-              const simpleBounds = new window.kakao.maps.LatLngBounds();
-              simpleBounds.extend(start);
-              simpleBounds.extend(end);
-              
-              // 지도 컨테이너 크기에 비례한 padding 계산
-              const mapContainer = mapRef.current;
-              if (mapContainer) {
-                const containerWidth = mapContainer.offsetWidth;
-                const containerHeight = mapContainer.offsetHeight;
-                // 화면 크기의 5% 정도를 padding으로 설정
-                const padding = Math.min(containerWidth, containerHeight) * 0.05;
-                mapInstanceRef.current.setBounds(simpleBounds, padding);
-              } else {
-                mapInstanceRef.current.setBounds(simpleBounds, 0);
-              }
-              
-              // 직선거리 계산 및 표시
-              const distance = calculateDistance(route.start.latitude, route.start.longitude, route.end.latitude, route.end.longitude);
-              const estimatedTime = Math.round(distance / 80) * 60; // 대략적인 도보 시간 (분당 80m, 초 단위)
-              updateRouteInfo(distance, estimatedTime);
-            }
-          } catch (routeError) {
-            console.error('경로 표시 오류:', routeError);
-            // 오류 시 직선 경로로 대체
-            const path = [start, end];
-            const polyline = new window.kakao.maps.Polyline({
-              path,
-              strokeWeight: 8,
-              strokeColor: "#2563eb",
-              strokeOpacity: 0.9,
-              strokeStyle: "solid",
-            });
-            polyline.setMap(mapInstanceRef.current);
-            polylineRef.current = polyline;
-            
-            // 지도를 경로에 맞게 자동 조정 (전체 화면에 맞게)
-            const errorBounds = new window.kakao.maps.LatLngBounds();
-            errorBounds.extend(start);
-            errorBounds.extend(end);
-            
-            // 지도 컨테이너 크기에 비례한 padding 계산
-            const mapContainer = mapRef.current;
-            if (mapContainer) {
-              const containerWidth = mapContainer.offsetWidth;
-              const containerHeight = mapContainer.offsetHeight;
-              // 화면 크기의 5% 정도를 padding으로 설정
-              const padding = Math.min(containerWidth, containerHeight) * 0.05;
-              mapInstanceRef.current.setBounds(errorBounds, padding);
-            } else {
-              mapInstanceRef.current.setBounds(errorBounds, 0);
-            }
-            
-            // 직선거리 계산 및 표시
-            const distance = calculateDistance(route.start.latitude, route.start.longitude, route.end.latitude, route.end.longitude);
-            const estimatedTime = Math.round(distance / 80) * 60;
-            updateRouteInfo(distance, estimatedTime);
-          }
-        } else {
-          console.error('도보 경로 검색 실패:', status);
-          // 실패 시 직선 경로로 대체
-          const path = [start, end];
-          const polyline = new window.kakao.maps.Polyline({
-            path,
-            strokeWeight: 8,
-            strokeColor: "#2563eb",
-            strokeOpacity: 0.9,
-            strokeStyle: "solid",
-          });
-          polyline.setMap(mapInstanceRef.current);
-          polylineRef.current = polyline;
-          
-          // 지도를 경로에 맞게 자동 조정 (전체 화면에 맞게)
-          const failBounds = new window.kakao.maps.LatLngBounds();
-          failBounds.extend(start);
-          failBounds.extend(end);
-          
-          // 지도 컨테이너 크기에 비례한 padding 계산
-          const mapContainer = mapRef.current;
-          if (mapContainer) {
-            const containerWidth = mapContainer.offsetWidth;
-            const containerHeight = mapContainer.offsetHeight;
-            // 화면 크기의 5% 정도를 padding으로 설정
-            const padding = Math.min(containerWidth, containerHeight) * 0.05;
-            mapInstanceRef.current.setBounds(failBounds, padding);
-          } else {
-            mapInstanceRef.current.setBounds(failBounds, 0);
-          }
-          
-          // 직선거리 계산 및 표시
-          const distance = calculateDistance(route.start.latitude, route.start.longitude, route.end.latitude, route.end.longitude);
-          const estimatedTime = Math.round(distance / 80) * 60;
-          updateRouteInfo(distance, estimatedTime);
-        }
-      });
-    } catch (error) {
-      console.error('경로 표시 오류:', error);
-      // 오류 시 직선 경로로 대체
-      const path = [
-        new window.kakao.maps.LatLng(route.start.latitude, route.start.longitude),
-        new window.kakao.maps.LatLng(route.end.latitude, route.end.longitude),
-      ];
+      
       const polyline = new window.kakao.maps.Polyline({
-        path,
+        path: [start, end],
         strokeWeight: 8,
-        strokeColor: "#2563eb",
+        strokeColor: '#2563eb',
         strokeOpacity: 0.9,
-        strokeStyle: "solid",
+        strokeStyle: 'solid',
       });
+
       polyline.setMap(mapInstanceRef.current);
       polylineRef.current = polyline;
-      
-      // 지도를 경로에 맞게 자동 조정 (전체 화면에 맞게)
-      const catchBounds = new window.kakao.maps.LatLngBounds();
-      catchBounds.extend(new window.kakao.maps.LatLng(route.start.latitude, route.start.longitude));
-      catchBounds.extend(new window.kakao.maps.LatLng(route.end.latitude, route.end.longitude));
-      
-      // 지도 컨테이너 크기에 비례한 padding 계산
+
+      const bounds = new window.kakao.maps.LatLngBounds();
+      bounds.extend(start);
+      bounds.extend(end);
+
       const mapContainer = mapRef.current;
       if (mapContainer) {
         const containerWidth = mapContainer.offsetWidth;
         const containerHeight = mapContainer.offsetHeight;
-        // 화면 크기의 5% 정도를 padding으로 설정
         const padding = Math.min(containerWidth, containerHeight) * 0.05;
-        mapInstanceRef.current.setBounds(catchBounds, padding);
+        mapInstanceRef.current.setBounds(bounds, padding);
       } else {
-        mapInstanceRef.current.setBounds(catchBounds, 0);
+        mapInstanceRef.current.setBounds(bounds, 0);
       }
-      
+
       // 직선거리 계산 및 표시
       const distance = calculateDistance(route.start.latitude, route.start.longitude, route.end.latitude, route.end.longitude);
       const estimatedTime = Math.round(distance / 80) * 60;
-      updateRouteInfo(distance, estimatedTime);
+      
+      if (onRouteInfoUpdate) {
+        onRouteInfoUpdate({
+          distance: distance,
+          duration: estimatedTime
+        });
+      }
     }
-  }, [route, calculateDistance, updateRouteInfo]);
+  }, [route, onRouteInfoUpdate, calculateDistance]);
 
   /** 초기 로딩 */
   useEffect(() => {

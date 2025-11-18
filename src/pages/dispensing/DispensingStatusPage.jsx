@@ -119,6 +119,27 @@ function DispensingStatusPage() {
     return null;
   }, [pharmacyLatitude, pharmacyLongitude, hospitalLatitude, hospitalLongitude]);
 
+  // 경로 정보 업데이트 핸들러
+  const handleRouteInfoUpdate = ({ distance, duration }) => {
+    const distanceElement = document.getElementById('routeDistance');
+    const durationElement = document.getElementById('routeDuration');
+    
+    if (distanceElement) {
+      // 거리 표시 (미터를 적절한 단위로 변환)
+      if (distance < 1000) {
+        distanceElement.textContent = `${Math.round(distance)}m`;
+      } else {
+        distanceElement.textContent = `${(distance / 1000).toFixed(1)}km`;
+      }
+    }
+    
+    if (durationElement) {
+      // 시간 표시 (초를 분으로 변환)
+      const durationMin = Math.round(duration / 60);
+      durationElement.textContent = `${durationMin}분`;
+    }
+  };
+
   return (
     <AppLayout
       headerProps={{
@@ -149,6 +170,7 @@ function DispensingStatusPage() {
               hospitalLocation={null}
               route={route}
               useIndexScript={true}
+              onRouteInfoUpdate={handleRouteInfoUpdate}
             />
             {!pharmacyFromState && pharmacyInfoQuery.isLoading && (
               <div style={{ 
