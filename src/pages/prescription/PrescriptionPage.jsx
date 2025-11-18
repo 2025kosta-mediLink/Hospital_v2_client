@@ -9,7 +9,7 @@ import PrescriptionError from '../../components/prescription/PrescriptionError';
 import PrescriptionEmpty from '../../components/prescription/PrescriptionEmpty';
 import '../../styles/prescriptionList.css';
 
-const DEFAULT_MEMBER_ID = 1;
+const DEFAULT_MEMBER_ID = 20;
 
 function PrescriptionPage() {
   const [memberId] = useState(DEFAULT_MEMBER_ID);
