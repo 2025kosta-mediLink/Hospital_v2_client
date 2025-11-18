@@ -171,14 +171,14 @@
     margin-bottom: 2px;
 }
 
-/* 완료된 단계: 체크된 파란색 동그라미 + 검정글씨색 */
+/* 완료된 단계: 체크된 파란색 동그라미 + 파란색 글씨 */
 .step.completed .step-title {
-    color: #111827;
+    color: #2563eb;
     font-weight: 600;
 }
 
 .step.completed .step-detail, .step.completed .step-time {
-    color: #6b7280;
+    color: #2563eb;
 }
 
 /* 진행 중인 단계: 파란색 동그라미 + 파란글씨색 */
@@ -191,19 +191,19 @@
     color: #2563eb;
 }
 
-/* 미진행 단계: 회색 동그라미 + 회색글씨 */
+/* 미진행 단계: 검정색 글씨 + 빈 동그라미 (회색 테두리) */
 .step.pending .step-title {
-    color: #9ca3af;
-    font-weight: 500;
+    color: #111827; /* 검정색 글씨 */
+    font-weight: 600;
 }
 
 .step.pending .step-detail, .step.pending .step-time {
-    color: #9ca3af;
+    color: #6b7280;
 }
 
 .step.pending .step-circle {
-    background: #f3f4f6;
-    border-color: #d1d5db;
+    background: #fff; /* 빈 동그라미 */
+    border-color: #e5e7eb; /* 회색 테두리 */
 }
 
 /* 처방전 상세 정보 */
@@ -310,6 +310,16 @@
 
 .completion-notification-character {
     margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pharmacist-image {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    animation: bounce 1s ease-in-out;
 }
 
 .medicine-bag {
