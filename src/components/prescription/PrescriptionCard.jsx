@@ -5,18 +5,46 @@
 
 function PrescriptionCard({ item, onSelect, isSelected, onView, onStatusCheck }) {
   const isCompleted = item.completed || false;
-  const canSelect = item.canSelect && !isCompleted;
+  // 완료되지 않은 경우 항상 선택 가능
+  const canSelect = !isCompleted;
+
+  const handleCardClick = (e) => {
+    // 버튼이나 체크박스를 클릭한 경우는 처리하지 않음
+    if (e.target.closest('button') || e.target.closest('.prescription-checkbox')) {
+      return;
+    }
+    
+    // 완료되지 않은 경우에만 선택 가능
+    if (canSelect && onSelect) {
+      onSelect(item.prescriptionId, !isSelected);
+    }
+  };
+
+  const handleCheckboxChange = (e) => {
+    e.stopPropagation(); // 카드 클릭 이벤트와 중복 방지
+    if (onSelect) {
+      onSelect(item.prescriptionId, e.target.checked);
+    }
+  };
+
+  const handleButtonClick = (e) => {
+    e.stopPropagation(); // 카드 클릭 이벤트와 중복 방지
+  };
 
   return (
-    <div className="prescription-card">
+    <div 
+      className={`prescription-card ${isSelected ? 'selected' : ''}`}
+      onClick={handleCardClick}
+      style={{ cursor: canSelect ? 'pointer' : 'default' }}
+    >
       {/* Checkbox */}
-      <label className="prescription-checkbox">
+      <label className="prescription-checkbox" onClick={(e) => e.stopPropagation()}>
         <input
           type="checkbox"
           className="checkbox-input"
           checked={isSelected}
           disabled={!canSelect}
-          onChange={(e) => onSelect && onSelect(item.prescriptionId, e.target.checked)}
+          onChange={handleCheckboxChange}
         />
         <div className={`checkbox-custom ${isCompleted ? 'completed' : ''}`}></div>
       </label>
@@ -42,10 +70,16 @@ function PrescriptionCard({ item, onSelect, isSelected, onView, onStatusCheck })
       {/* Actions Row */}
       <div className="actions-row">
         <div className="prescription-actions">
-          <button className="btn-view" onClick={() => onView && onView(item.prescriptionId)}>
+          <button className="btn-view" onClick={(e) => {
+            handleButtonClick(e);
+            onView && onView(item.prescriptionId);
+          }}>
             처방전 보기
           </button>
-          <button className="btn-status" onClick={() => onStatusCheck && onStatusCheck(item.prescriptionId)}>
+          <button className="btn-status" onClick={(e) => {
+            handleButtonClick(e);
+            onStatusCheck && onStatusCheck(item.prescriptionId);
+          }}>
             조제 상황 확인
           </button>
         </div>
