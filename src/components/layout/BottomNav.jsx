@@ -40,7 +40,19 @@ function BottomNav() {
   const currentPath = location.pathname || "/";
 
   return (
-    <nav className="border-t border-slate-200 bg-white shrink-0">
+    <nav 
+      className="border-t border-slate-200 bg-white shrink-0"
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '100%',
+        maxWidth: '393px',
+        zIndex: 1000,
+        backgroundColor: '#ffffff'
+      }}
+    >
       <div className="mx-auto max-w-[393px]">
         <div className="grid grid-cols-5 items-center">
           {TABS.map((tab) => {
