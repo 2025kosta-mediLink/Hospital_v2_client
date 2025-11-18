@@ -3,8 +3,8 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const TABS = [
-  { id: "reservation", label: "예약", path: "/reservation" },
-  { id: "reception", label: "접수", path: "/reception" },
+  { id: "reservation", label: "예약", path: "/reservation/departments" },
+  { id: "reception", label: "접수", path: "/reception/departments" },
   { id: "home", label: "홈", path: "/" },
   { id: "prescription", label: "처방전", path: "/prescription" },
   { id: "mypage", label: "마이페이지", path: "/mypage" },
@@ -39,8 +39,36 @@ function BottomNav() {
   const navigate = useNavigate();
   const currentPath = location.pathname || "/";
 
-  const handleTabClick = (path) => {
-    navigate(path);
+  const handleTabClick = (tab) => {
+    // 예약 또는 접수 클릭 시 from 정보 전달
+    if (tab.id === "reservation" || tab.id === "reception") {
+      navigate(tab.path, {
+        state: { from: tab.id },
+      });
+    } else {
+      navigate(tab.path);
+    }
+  };
+
+  // ✅ 활성화 상태 체크 함수
+  const isTabActive = (tabId) => {
+    // 예약 플로우 전체 활성화
+    if (tabId === "reservation") {
+      return (
+        currentPath.startsWith("/reservation/") ||
+        currentPath === "/reservation"
+      );
+    }
+
+    // 접수 플로우 전체 활성화
+    if (tabId === "reception") {
+      return (
+        currentPath.startsWith("/reception/") || currentPath === "/reception"
+      );
+    }
+
+    // 나머지 탭은 정확한 경로 매칭
+    return currentPath === TABS.find((tab) => tab.id === tabId)?.path;
   };
 
   return (
@@ -49,7 +77,7 @@ function BottomNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       {TABS.map((tab) => {
-        const isActive = currentPath === tab.path;
+        const isActive = isTabActive(tab.id); // ✅ 변경
         const icon = isActive
           ? TAB_ICONS[tab.id].active
           : TAB_ICONS[tab.id].inactive;
@@ -57,7 +85,7 @@ function BottomNav() {
         return (
           <button
             key={tab.id}
-            onClick={() => handleTabClick(tab.path)}
+            onClick={() => handleTabClick(tab)}
             className="flex flex-col items-center justify-center gap-1 flex-1 py-2 cursor-pointer transition-colors"
             aria-label={tab.label}
             aria-current={isActive ? "page" : undefined}

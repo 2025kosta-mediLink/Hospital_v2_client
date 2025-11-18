@@ -1,1 +1,42 @@
 @import "tailwindcss";
+
+/* 의사 카드 캐러셀 스타일 */
+.doctor-card-absolute {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  transition: transform 0.35s ease, opacity 0.35s ease, filter 0.35s ease;
+  will-change: transform, opacity, filter;
+}
+
+.card-current {
+  z-index: 3;
+  transform: translateX(0) scale(1);
+  opacity: 1;
+  filter: none;
+}
+
+.card-next {
+  z-index: 2;
+  transform: translateX(24px) scale(0.96);
+  opacity: 0.6;
+  filter: saturate(85%);
+}
+
+.card-hidden {
+  z-index: 1;
+  transform: translateX(120%) scale(0.95);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 스크롤바 숨기기 */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

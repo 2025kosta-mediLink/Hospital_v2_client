@@ -103,9 +103,7 @@ function HomeContent() {
         {/* 진료시간 안내 */}
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="mb-2.5 flex items-center gap-2">
-            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-100">
-              <span className="h-2.5 w-2.5 rounded-full bg-slate-400" />
-            </span>
+
             <h2 className="text-[16px] font-semibold text-slate-900">
               진료시간 안내
             </h2>

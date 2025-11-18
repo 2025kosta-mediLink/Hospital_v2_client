@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AppLayout from "../../components/layout/AppLayout";
+import { login } from "../../api/authApi";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -9,21 +10,24 @@ function LoginPage() {
 
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const errorFromState = (location.state?.error || "").trim();
+  const messageFromState = (location.state?.message || "").trim();
 
   useEffect(() => {
     if (errorFromState) {
       alert(errorFromState);
     }
-  }, [errorFromState]);
+    if (messageFromState) {
+      alert(messageFromState);
+    }
+  }, [errorFromState, messageFromState]);
 
-  // ✅ 헤더바는 보이지만, 가운데 title 은 비움
   const headerProps = {
-    // title: "로그인"  ← 제거
-    // 필요하면 나중에 onBack, onClose 추가 가능
+    // title 없음 (헤더는 보이지만 타이틀 비움)
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const id = loginId.trim();
@@ -34,20 +38,34 @@ function LoginPage() {
       return;
     }
 
-    // TODO: 실제 로그인 API 연동 위치
-    console.log("submit login", { id, pw });
+    setIsLoading(true);
+    try {
+      const result = await login(id, pw);
+
+      console.log("로그인 응답:", result);
+
+      // 응답 구조: { isSuccess: true, code: "200", data: { ... } }
+      if (result.isSuccess) {
+        navigate("/"); // 홈으로 이동
+      } else {
+        alert(result.message || "로그인에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("로그인 에러:", error);
+      alert(error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoSignUp = (e) => {
     e.preventDefault();
-    navigate("/consent"); // 추후 약관 동의 라우트로 변경 가능
+    navigate("/consent");
   };
 
   return (
     <AppLayout headerProps={headerProps}>
-      {/* JSP: .card.auth */}
       <div className="mt-[84px] px-[22px] py-[28px] bg-white rounded-2xl shadow-md">
-        {/* JSP: .card-title */}
         <div className="text-center text-[20px] font-extrabold tracking-[-0.02em] text-slate-900">
           로그인
         </div>
@@ -66,7 +84,7 @@ function LoginPage() {
               아이디
             </label>
             <input
-              className="w-full bg-transparent border-b border-slate-200 outline-none px-[6px] pt-[14px] pb-[16px] text-[16px] text-slate-900 caret-blue-600 placeholder-slate-400 focus:border-blue-600"
+              className="w-full bg-transparent border-b border-slate-200 outline-none px-[6px] pt-[14px] pb-[16px] text-[16px] text-slate-900 caret-blue-600 placeholder-slate-400 focus:border-blue-600 disabled:opacity-50"
               id="loginId"
               name="loginId"
               type="text"
@@ -74,6 +92,7 @@ function LoginPage() {
               required
               value={loginId}
               onChange={(e) => setLoginId(e.target.value)}
+              disabled={isLoading}
             />
           </div>
 
@@ -85,7 +104,7 @@ function LoginPage() {
               비밀번호
             </label>
             <input
-              className="w-full bg-transparent border-b border-slate-200 outline-none px-[6px] pt-[14px] pb-[16px] text-[16px] text-slate-900 caret-blue-600 placeholder-slate-400 focus:border-blue-600"
+              className="w-full bg-transparent border-b border-slate-200 outline-none px-[6px] pt-[14px] pb-[16px] text-[16px] text-slate-900 caret-blue-600 placeholder-slate-400 focus:border-blue-600 disabled:opacity-50"
               id="password"
               name="password"
               type="password"
@@ -93,14 +112,16 @@ function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
             />
           </div>
 
           <button
-            className="w-full mt-6 rounded-full bg-blue-600 text-white py-3 text-sm font-semibold shadow-sm active:scale-[0.99]"
+            className="w-full mt-6 rounded-full bg-blue-600 text-white py-3 text-sm font-semibold shadow-sm active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
             type="submit"
+            disabled={isLoading}
           >
-            로그인
+            {isLoading ? "로그인 중..." : "로그인"}
           </button>
         </form>
 

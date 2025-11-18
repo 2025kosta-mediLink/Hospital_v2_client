@@ -141,10 +141,8 @@ function SignUpPage() {
 
       // 회원가입 성공 여부 확인
       if (result.isSuccess) {
-        alert("회원가입이 완료되었습니다.");
-        navigate("/login", {
-          state: { message: "회원가입이 완료되었습니다. 로그인해주세요." },
-        });
+        // alert 제거하고 완료 페이지로 이동
+        navigate("/signup/done");
       } else {
         alert(result.message || "회원가입에 실패했습니다.");
       }
