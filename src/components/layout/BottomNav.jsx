@@ -6,7 +6,7 @@ const TABS = [
   { id: "reservation", label: "예약", path: "/reservation" },
   { id: "reception", label: "접수", path: "/reception" },
   { id: "home", label: "홈", path: "/" },
-  { id: "prescription", label: "처방전", path: "/prescription" },
+  { id: "prescription", label: "처방전", path: "/prescription", relatedPaths: ["/prescription", "/pharmacy", "/dispensing"] },
   { id: "mypage", label: "마이페이지", path: "/mypage" },
 ];
 
@@ -40,15 +40,34 @@ function BottomNav() {
   const currentPath = location.pathname || "/";
 
   return (
-    <nav className="border-t border-slate-200 bg-white shrink-0">
+    <nav 
+      className="border-t border-slate-200 bg-white shrink-0"
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '100%',
+        maxWidth: '393px',
+        zIndex: 1000,
+        backgroundColor: '#ffffff'
+      }}
+    >
       <div className="mx-auto max-w-[393px]">
         <div className="grid grid-cols-5 items-center">
           {TABS.map((tab) => {
-            // 홈(/)은 정확히 일치, 나머지는 prefix로 체크
-            const isActive =
-              tab.path === "/"
-                ? currentPath === "/"
-                : currentPath.startsWith(tab.path);
+            // 홈(/)은 정확히 일치
+            // 처방전 탭은 관련 경로들(/prescription, /pharmacy, /dispensing)에서 모두 활성화
+            // 나머지는 prefix로 체크
+            let isActive;
+            if (tab.path === "/") {
+              isActive = currentPath === "/";
+            } else if (tab.relatedPaths) {
+              // 관련 경로가 정의된 경우 (처방전 탭)
+              isActive = tab.relatedPaths.some(path => currentPath.startsWith(path));
+            } else {
+              isActive = currentPath.startsWith(tab.path);
+            }
 
             const icon = TAB_ICONS[tab.id];
             const iconSrc = icon

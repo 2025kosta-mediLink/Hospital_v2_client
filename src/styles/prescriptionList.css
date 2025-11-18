@@ -24,12 +24,13 @@
     padding: 0px;
     gap: 8px;
     width: 100%;
+    max-width: 343px;
     height: 29px;
     border-radius: 0px;
 }
 
 .section-title {
-    width: 100%;
+    width: 343px;
     height: 20px;
     font-family: 'Inter';
     font-style: normal;
@@ -44,7 +45,7 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 0px;
-    width: 100%;
+    width: 343px;
     height: 1px;
     background: #E9ECEF;
     border-radius: 0px;
@@ -58,6 +59,7 @@
     padding: 0px;
     gap: 16px;
     width: 100%;
+    max-width: 343px;
     border-radius: 0px;
 }
 
@@ -69,28 +71,36 @@
     padding: 20px;
     gap: 16px;
     width: 100%;
+    max-width: 343px;
     min-height: 175px;
     background: #FFFFFF;
     border: 1px solid #E9ECEF;
     border-radius: 12px;
     position: relative;
+    transition: background-color 0.2s ease;
+}
+
+.prescription-card.selected {
+    background: #E3F2FD;
+    border-color: #90CAF9;
 }
 
 /* Department Row */
 .department-row {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     padding: 0px;
-    width: 100%;
+    width: 303px;
     height: 17px;
     border-radius: 0px;
+    gap: 8px;
 }
 
 .label {
-    margin: 0 auto;
-    width: 80px;
+    margin: 0;
+    width: auto;
     height: 17px;
     font-family: 'Inter';
     font-style: normal;
@@ -101,9 +111,8 @@
 }
 
 .value {
-    margin: 0 auto;
+    margin: 0;
     width: auto;
-    flex: 1;
     height: 17px;
     font-family: 'Inter';
     font-style: normal;
@@ -111,31 +120,33 @@
     font-size: 14px;
     line-height: 17px;
     color: #000000;
-    text-align: right;
+    text-align: left;
 }
 
 /* Doctor Row */
 .doctor-row {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     padding: 0px;
-    width: 100%;
+    width: 303px;
     height: 17px;
     border-radius: 0px;
+    gap: 8px;
 }
 
 /* Date Row */
 .date-row {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     padding: 0px;
-    width: 100%;
+    width: 303px;
     height: 17px;
     border-radius: 0px;
+    gap: 8px;
 }
 
 /* Actions Row */
@@ -145,7 +156,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0px;
-    width: 100%;
+    width: 303px;
     height: 36px;
     border-radius: 0px;
 }
@@ -171,7 +182,8 @@
     justify-content: center;
     align-items: center;
     padding: 0px 12px;
-    width: 83px;
+    width: auto;
+    min-width: 83px;
     height: 36px;
     border: 1px solid #007BFF;
     border-radius: 6px;
@@ -183,6 +195,7 @@
     font-size: 12px;
     line-height: 14px;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 /* Status Button */
@@ -193,7 +206,8 @@
     justify-content: center;
     align-items: center;
     padding: 0px 12px;
-    width: 97px;
+    width: auto;
+    min-width: 97px;
     height: 36px;
     border: 1px solid #28A745;
     border-radius: 6px;
@@ -205,6 +219,7 @@
     font-size: 12px;
     line-height: 14px;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 /* Checkbox */
@@ -222,6 +237,37 @@
     position: absolute;
     right: 20px;
     top: 20px;
+}
+
+/* 수령 정보 (체크박스 아래) */
+.receipt-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 0px;
+    gap: 2px;
+    width: auto;
+    position: absolute;
+    right: 20px;
+    top: 48px;
+}
+
+.receipt-pharmacy {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 14px;
+    color: #28A745;
+}
+
+.receipt-date {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 14px;
+    color: #28A745;
 }
 
 .checkbox-input {
