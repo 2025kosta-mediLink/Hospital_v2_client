@@ -1,20 +1,42 @@
 // src/pages/Home.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "../../components/layout/AppLayout";
 import { useAuth } from "../../context/AuthContext";
+import { getTodayReservations } from "../../api/reservationApi";
 
 function HomeContent() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [todayReservations, setTodayReservations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const summary = {
-    hasAppointment: false,
-    departmentName: "내과",
-    doctorName: "김소정",
-    timeText: "오후 02:30",
-    myQueueNo: null,
+  useEffect(() => {
+    if (user) {
+      fetchTodayReservations();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const fetchTodayReservations = async () => {
+    try {
+      setLoading(true);
+      const response = await getTodayReservations();
+      if (response.isSuccess && response.data) {
+        setTodayReservations(response.data);
+      }
+    } catch (error) {
+      console.error("오늘의 예약 조회 실패:", error);
+      setTodayReservations([]);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // 첫 번째 예약 정보 (요약용)
+  const firstReservation = todayReservations[0];
+  const hasAppointment = todayReservations.length > 0;
 
   const quickItems = [
     {
@@ -75,30 +97,52 @@ function HomeContent() {
             </h2>
           </div>
 
-          <p className="mb-3 text-center text-[13px] font-medium text-slate-500">
-            {summary.hasAppointment ? (
-              <>
-                {summary.departmentName}
-                <span className="mx-1.5 text-slate-300">•</span>
-                {summary.doctorName} 교수
-                <span className="mx-1.5 text-slate-300">•</span>
-                {summary.timeText}
-              </>
-            ) : (
-              "오늘 예약된 일정이 없습니다."
-            )}
-          </p>
+          {loading ? (
+            <p className="mb-3 text-center text-[13px] font-medium text-slate-500">
+              로딩 중...
+            </p>
+          ) : (
+            <>
+              <p className="mb-3 text-center text-[13px] font-medium text-slate-500">
+                {hasAppointment ? (
+                  <>
+                    {firstReservation.departmentName}
+                    <span className="mx-1.5 text-slate-300">•</span>
+                    {firstReservation.doctorName}
+                    <span className="mx-1.5 text-slate-300">•</span>
+                    {firstReservation.reservationTime}
+                    {todayReservations.length > 1 && (
+                      <span className="ml-2 text-blue-600">
+                        외 {todayReservations.length - 1}건
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  "오늘 예약된 일정이 없습니다."
+                )}
+              </p>
 
-          <div className="h-px bg-slate-200 mb-3" />
+              <div className="h-px bg-slate-200 mb-3" />
 
-          <div className="flex items-center justify-between">
-            <span className="text-[18px] font-semibold text-slate-900">
-              대기 순번
-            </span>
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-sky-500 text-[15px] font-bold text-white">
-              {summary.myQueueNo ?? "-"}
-            </span>
-          </div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[18px] font-semibold text-slate-900">
+                  대기 순번
+                </span>
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-sky-500 text-[15px] font-bold text-white">
+                  -
+                </span>
+              </div>
+
+              {hasAppointment && (
+                <button
+                  onClick={() => navigate("/reservation/today")}
+                  className="w-full rounded-full border border-blue-600 bg-white text-blue-600 py-2.5 text-sm font-semibold hover:bg-blue-50 active:scale-[0.99] transition"
+                >
+                  오늘 예약 보기
+                </button>
+              )}
+            </>
+          )}
         </section>
 
         {/* 퀵 액션 */}
