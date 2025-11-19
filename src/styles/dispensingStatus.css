@@ -272,6 +272,13 @@
     color: #10b981;
 }
 
+/* 모달이 열릴 때 헤더와 네비게이션 바 어둡게 처리 */
+body.modal-open header,
+body.modal-open nav {
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
 /* 조제 완료 알림 모달 */
 .completion-notification-modal {
     position: fixed;
