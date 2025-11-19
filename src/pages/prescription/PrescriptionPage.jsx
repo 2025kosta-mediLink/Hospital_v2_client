@@ -9,16 +9,13 @@ import PrescriptionError from '../../components/prescription/PrescriptionError';
 import PrescriptionEmpty from '../../components/prescription/PrescriptionEmpty';
 import '../../styles/prescriptionList.css';
 
-const DEFAULT_MEMBER_ID = 20;
-
 function PrescriptionPage() {
-  const [memberId] = useState(DEFAULT_MEMBER_ID);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const navigate = useNavigate();
 
   const listQuery = useQuery({
-    queryKey: ['prescriptions', memberId],
-    queryFn: () => prescriptionApi.list(memberId),
+    queryKey: ['prescriptions'],
+    queryFn: () => prescriptionApi.list(),
     retry: false, // API 서버가 없을 경우 빠르게 실패하도록
   });
 
