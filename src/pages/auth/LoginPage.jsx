@@ -68,9 +68,17 @@ function LoginPage() {
 
   return (
     <AppLayout headerProps={headerProps}>
-      <div className="mt-[84px] px-[22px] py-[28px] bg-white rounded-2xl shadow-md">
-        <div className="text-center text-[20px] font-extrabold tracking-[-0.02em] text-slate-900">
-          로그인
+      <div className="mt-[24px] px-[22px] py-[28px] bg-white rounded-2xl">
+        <div className="flex flex-col items-center mb-6">
+          <img 
+            src="/images/logo.png" 
+            alt="로고" 
+            className="mb-4"
+            style={{ maxWidth: '100px', height: 'auto' }}
+          />
+          <div className="text-center text-[20px] font-extrabold tracking-[-0.02em] text-slate-900">
+            로그인
+          </div>
         </div>
 
         <form

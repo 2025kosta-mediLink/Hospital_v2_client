@@ -49,6 +49,14 @@ export const pharmacyApi = {
               parseFloat(place.y), parseFloat(place.x)
             );
             
+            // 별점 생성 (3.5 ~ 5.0 사이, 0.5 단위) - 약국 ID 기반으로 일관성 유지
+            const idHash = place.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const rating = ((idHash % 4) * 0.5) + 3.5;
+            
+            // 약국마다 다른 영업 상태 - 약국 ID 기반으로 일관성 유지 (80%는 영업중, 20%는 영업종료)
+            const isOpenByDefault = (idHash % 10) < 8; // 80%는 기본적으로 영업중
+            const isOpen = isOpenByDefault ? checkIsOpen() : false;
+            
             return {
               pharmacyId: place.id,
               name: place.place_name,
@@ -57,13 +65,14 @@ export const pharmacyApi = {
               latitude: parseFloat(place.y),
               longitude: parseFloat(place.x),
               distanceMeters: distance,
-              open: checkIsOpen(),
-              status: checkIsOpen() ? 'OPEN' : 'CLOSED'
+              rating: rating,
+              open: isOpen,
+              status: isOpen ? 'OPEN' : 'CLOSED'
             };
           });
         
-        // 거리순 정렬
-        pharmacies.sort((a, b) => a.distanceMeters - b.distanceMeters);
+        // 기본 정렬은 거리순 (나중에 필터에서 변경 가능)
+        // pharmacies.sort((a, b) => a.distanceMeters - b.distanceMeters);
         
         return {
           center: { latitude, longitude },

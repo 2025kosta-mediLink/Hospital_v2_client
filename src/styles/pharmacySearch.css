@@ -46,13 +46,27 @@
 
 .filter-tag {
     padding: 6px 12px;
-    background: #10b981;
-    color: #fff;
+    background: rgba(255, 255, 255, 0.9);
+    color: #6b7280;
     border-radius: 16px;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     border: none;
+    transition: all 0.2s ease;
+}
+
+.filter-tag.active {
+    background: #10b981;
+    color: #fff;
+}
+
+.filter-tag:hover {
+    background: #f3f4f6;
+}
+
+.filter-tag.active:hover {
+    background: #059669;
 }
 
 .filter-tag-dropdown {
@@ -64,11 +78,6 @@
     color: #111827;
     cursor: pointer;
     border: none;
-}
-
-.filter-tag:not(.active) {
-    background: rgba(255, 255, 255, 0.9);
-    color: #6b7280;
 }
 
 /* 전체 화면 지도 */
@@ -230,11 +239,34 @@
     margin-bottom: 4px;
 }
 
+.pharmacy-distance-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
 .pharmacy-distance {
     font-size: 14px;
     font-weight: 600;
     color: #6b7280;
-    margin-bottom: 4px;
+}
+
+.pharmacy-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pharmacy-rating .stars {
+    font-size: 12px;
+    line-height: 1;
+}
+
+.pharmacy-rating .rating-number {
+    font-size: 12px;
+    font-weight: 600;
+    color: #f59e0b;
 }
 
 .pharmacy-address {
@@ -312,6 +344,25 @@
     font-size: 14px;
     color: #6b7280;
     line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.pharmacy-rating-modal {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.pharmacy-rating-modal .stars-modal {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.pharmacy-rating-modal .rating-number-modal {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f59e0b;
 }
 
 /* 모달 액션 버튼들 */
@@ -358,8 +409,14 @@
     transition: all 0.2s ease;
 }
 
-.btn-send-prescription:hover {
+.btn-send-prescription:hover:not(.disabled) {
     background: #1d4ed8;
+}
+
+.btn-send-prescription.disabled {
+    background: #d1d5db;
+    color: #9ca3af;
+    cursor: not-allowed;
 }
 
 /* 확인 모달 */

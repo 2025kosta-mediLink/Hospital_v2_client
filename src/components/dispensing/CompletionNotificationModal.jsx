@@ -3,7 +3,23 @@
  * 조제가 완료되었을 때 표시되는 알림 모달
  */
 
+import { useEffect } from 'react';
+
 function CompletionNotificationModal({ isOpen, completedAt, onConfirm }) {
+  // 모달이 열릴 때 body에 클래스 추가, 닫힐 때 제거
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    
+    // cleanup
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   // 날짜 포맷팅 (예: 25.09.26.14:20)
