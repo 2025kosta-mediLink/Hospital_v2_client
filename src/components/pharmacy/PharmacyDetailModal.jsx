@@ -6,6 +6,25 @@
 function PharmacyDetailModal({ pharmacy, isOpen, onClose, onSend }) {
   if (!isOpen || !pharmacy) return null;
 
+  // 별점 표시 함수
+  const renderStars = (rating) => {
+    if (!rating) return null;
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    
+    return (
+      <div className="pharmacy-rating-modal">
+        <span className="stars-modal">
+          {'⭐'.repeat(fullStars)}
+          {hasHalfStar && '⭐'}
+          {'☆'.repeat(emptyStars)}
+        </span>
+        <span className="rating-number-modal">{rating.toFixed(1)}</span>
+      </div>
+    );
+  };
+
   return (
     <div className={`pharmacy-detail-modal ${isOpen ? 'show' : ''}`}>
       <div className="modal-handle" onClick={onClose}></div>
@@ -27,6 +46,7 @@ function PharmacyDetailModal({ pharmacy, isOpen, onClose, onSend }) {
             <span>📍</span>
             <span>{pharmacy.address}</span>
           </div>
+          {pharmacy.rating && renderStars(pharmacy.rating)}
         </div>
         
         <div className="modal-actions">

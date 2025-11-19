@@ -41,6 +41,7 @@ function PharmacySearchPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(true);
+  const [sortBy, setSortBy] = useState('distance'); // 'distance' 또는 'recommended'
 
   // 약국 검색은 병원 위치 기준
   const searchLatitude = hospitalLatitude;
@@ -99,13 +100,26 @@ function PharmacySearchPage() {
   };
 
 
-  // 필터링된 약국 리스트
-  const filteredPharmacies = listQuery.data?.items?.filter(pharmacy => {
+  // 필터링 및 정렬된 약국 리스트
+  const filteredPharmacies = (() => {
+    const items = listQuery.data?.items || [];
+    
+    // 1. 영업중 필터 적용
+    let filtered = items;
     if (filterOpen) {
-      return pharmacy.open;
+      filtered = items.filter(pharmacy => pharmacy.open);
     }
-    return true;
-  }) || [];
+    
+    // 2. 정렬 적용
+    let sorted = [...filtered];
+    if (sortBy === 'distance') {
+      sorted.sort((a, b) => a.distanceMeters - b.distanceMeters);
+    } else if (sortBy === 'recommended') {
+      sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    }
+    
+    return sorted;
+  })();
 
   // 지도에 표시할 약국 리스트 (모달이 열려있으면 선택된 약국만, 아니면 전체 약국)
   const displayPharmacies = (isModalOpen || isConfirmModalOpen) && selectedPharmacy 
@@ -130,7 +144,9 @@ function PharmacySearchPage() {
       <div style={{ position: 'relative', width: '100%', height: 'calc(100vh - 64px - 72px)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* 필터 바 - 헤더 바로 아래 */}
         <PharmacySearchForm
+          sortBy={sortBy}
           filterOpen={filterOpen}
+          onSortChange={setSortBy}
           onFilterChange={setFilterOpen}
         />
 
