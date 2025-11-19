@@ -409,8 +409,14 @@
     transition: all 0.2s ease;
 }
 
-.btn-send-prescription:hover {
+.btn-send-prescription:hover:not(.disabled) {
     background: #1d4ed8;
+}
+
+.btn-send-prescription.disabled {
+    background: #d1d5db;
+    color: #9ca3af;
+    cursor: not-allowed;
 }
 
 /* 확인 모달 */

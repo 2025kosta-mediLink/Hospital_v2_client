@@ -59,7 +59,11 @@ function PharmacyDetailModal({ pharmacy, isOpen, onClose, onSend }) {
         </div>
         
         <div className="modal-main-action">
-          <button className="btn-send-prescription" onClick={onSend}>
+          <button 
+            className={`btn-send-prescription ${!pharmacy.open ? 'disabled' : ''}`}
+            onClick={pharmacy.open ? onSend : () => alert('영업종료된 약국에는 처방전을 전달할 수 없습니다.')}
+            disabled={!pharmacy.open}
+          >
             처방전 전달하기
           </button>
         </div>

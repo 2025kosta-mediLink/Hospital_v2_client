@@ -86,6 +86,11 @@ function PharmacySearchPage() {
 
   const handleSendPrescription = () => {
     if (selectedPharmacy) {
+      // 영업종료된 약국은 처방전 전달 불가
+      if (!selectedPharmacy.open) {
+        alert('영업종료된 약국에는 처방전을 전달할 수 없습니다.');
+        return;
+      }
       setIsConfirmModalOpen(true);
     }
   };
