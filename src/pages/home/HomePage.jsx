@@ -34,8 +34,6 @@ function HomeContent() {
     }
   };
 
-  // 첫 번째 예약 정보 (요약용)
-  const firstReservation = todayReservations[0];
   const hasAppointment = todayReservations.length > 0;
 
   const quickItems = [
@@ -72,6 +70,10 @@ function HomeContent() {
     navigate(path);
   };
 
+  const handleReservationClick = () => {
+    navigate("/reservation/today");
+  };
+
   return (
     <div className="pb-5">
       {/* 히어로 영역 */}
@@ -86,7 +88,7 @@ function HomeContent() {
       <div className="-mt-7 px-4 space-y-4 relative z-10">
         {/* 오늘의 예약일정 패널 */}
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_28px_rgba(16,24,40,0.12),0_2px_6px_rgba(16,24,40,0.06)]">
-          <div className="flex items-center justify-center gap-2 mb-2.5">
+          <div className="flex items-center justify-center gap-2 mb-3">
             <img
               src="/images/icons/calendar_blue.png"
               alt="오늘의 예약일정"
@@ -98,50 +100,55 @@ function HomeContent() {
           </div>
 
           {loading ? (
-            <p className="mb-3 text-center text-[13px] font-medium text-slate-500">
+            <p className="text-center text-[13px] font-medium text-slate-500 py-4">
               로딩 중...
             </p>
-          ) : (
-            <>
-              <p className="mb-3 text-center text-[13px] font-medium text-slate-500">
-                {hasAppointment ? (
-                  <>
-                    {firstReservation.departmentName}
-                    <span className="mx-1.5 text-slate-300">•</span>
-                    {firstReservation.doctorName}
-                    <span className="mx-1.5 text-slate-300">•</span>
-                    {firstReservation.reservationTime}
-                    {todayReservations.length > 1 && (
-                      <span className="ml-2 text-blue-600">
-                        외 {todayReservations.length - 1}건
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  "오늘 예약된 일정이 없습니다."
-                )}
-              </p>
-
-              <div className="h-px bg-slate-200 mb-3" />
-
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[18px] font-semibold text-slate-900">
-                  대기 순번
-                </span>
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-sky-500 text-[15px] font-bold text-white">
-                  -
-                </span>
-              </div>
-
-              {hasAppointment && (
+          ) : hasAppointment ? (
+            <div className="space-y-2">
+              {todayReservations.map((reservation, index) => (
                 <button
-                  onClick={() => navigate("/reservation/today")}
-                  className="w-full rounded-full border border-blue-600 bg-white text-blue-600 py-2.5 text-sm font-semibold hover:bg-blue-50 active:scale-[0.99] transition"
+                  key={reservation.reservationId}
+                  onClick={handleReservationClick}
+                  className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-colors cursor-pointer"
                 >
-                  오늘 예약 보기
+                  <div className="flex items-center gap-2 text-left flex-1">
+                    <div className="flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-bold flex-shrink-0">
+                      {index + 1}
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap text-[13px]">
+                      <span className="font-semibold text-slate-900">
+                        {reservation.departmentName}
+                      </span>
+                      <span className="text-slate-300">•</span>
+                      <span className="text-slate-600">
+                        {reservation.doctorName}
+                      </span>
+                      <span className="text-slate-300">•</span>
+                      <span className="text-blue-600 font-medium">
+                        {reservation.reservationTime}
+                      </span>
+                    </div>
+                  </div>
+                  <svg
+                    className="w-5 h-5 text-slate-400 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
                 </button>
-              )}
-            </>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-[13px] font-medium text-slate-500 py-4">
+              오늘 예약된 일정이 없습니다.
+            </p>
           )}
         </section>
 
