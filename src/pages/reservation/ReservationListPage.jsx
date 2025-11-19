@@ -150,18 +150,19 @@ export default function ReservationListPage() {
   };
 
   // 예약 취소
-  const handleCancel = async (reservationId) => {
+  const handleCancel = async (item) => {
+    // ✅ item 객체 전체를 받도록 수정
     if (!confirm("예약을 취소하시겠습니까?")) {
       return;
     }
 
     setIsDeleting(true);
     try {
-      const result = await cancelReservation(reservationId);
+      const result = await cancelReservation(item.reservationId); // ✅ item.reservationId 사용
 
       if (result.isSuccess) {
         alert("예약이 취소되었습니다.");
-        // 목록 새로고침 (loadData 함수 사용)
+        // 목록 새로고침
         await loadData(selectedMonth, selectedStatus);
       } else {
         alert(result.message || "예약 취소에 실패했습니다.");

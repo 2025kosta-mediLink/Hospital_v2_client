@@ -1,8 +1,13 @@
 // src/pages/Home.jsx
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import AppLayout from "../../components/layout/AppLayout";
+import { useAuth } from "../../context/AuthContext";
 
 function HomeContent() {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
   const summary = {
     hasAppointment: false,
     departmentName: "내과",
@@ -16,18 +21,34 @@ function HomeContent() {
       id: "reservation",
       label: "진료예약",
       icon: "/images/icons/calendar_blue.png",
+      path: "/reservation/departments",
     },
     {
       id: "reception",
       label: "진료접수",
       icon: "/images/icons/clipboard_blue.png",
+      path: "/reception/departments",
     },
     {
       id: "prescription",
       label: "처방전",
       icon: "/images/icons/pill_blue.png",
+      path: "/prescription",
     },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      alert("로그아웃되었습니다.");
+    } catch (error) {
+      console.error("로그아웃 실패:", error);
+    }
+  };
+
+  const handleQuickAction = (path) => {
+    navigate(path);
+  };
 
   return (
     <div className="pb-5">
@@ -86,6 +107,7 @@ function HomeContent() {
             <button
               key={item.id}
               type="button"
+              onClick={() => handleQuickAction(item.path)}
               className="flex min-h-[110px] w-full flex-col items-center justify-center gap-2 rounded-[14px] border border-slate-200 bg-white px-3 py-3 text-center text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50 active:scale-[0.99]"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-50">
@@ -103,7 +125,6 @@ function HomeContent() {
         {/* 진료시간 안내 */}
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="mb-2.5 flex items-center gap-2">
-
             <h2 className="text-[16px] font-semibold text-slate-900">
               진료시간 안내
             </h2>
@@ -130,6 +151,25 @@ function HomeContent() {
               </span>
             </div>
           </div>
+        </section>
+
+        {/* 로그인/로그아웃 버튼 */}
+        <section className="pt-2">
+          {user ? (
+            <button
+              onClick={handleLogout}
+              className="w-full rounded-full border border-slate-300 bg-white text-slate-700 py-3 text-sm font-semibold shadow-sm hover:bg-slate-50 active:scale-[0.99] transition"
+            >
+              로그아웃
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate("/login")}
+              className="w-full rounded-full bg-blue-600 text-white py-3 text-sm font-semibold shadow-sm hover:bg-blue-700 active:scale-[0.99] transition"
+            >
+              로그인
+            </button>
+          )}
         </section>
 
         {/* 문의 푸터 */}

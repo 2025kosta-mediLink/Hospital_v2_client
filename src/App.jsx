@@ -1,5 +1,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
 import HomePage from "./pages/home/HomePage";
 import LoginPage from "./pages/auth/LoginPage";
 import ConsentPage from "./pages/auth/ConsentPage";
@@ -20,30 +21,118 @@ import ReceptionCompletePage from "./pages/reception/ReceptionCompletePage";
 function App() {
   return (
     <Routes>
+      {/* 인증 불필요 페이지 */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/consent" element={<ConsentPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/signup/done" element={<SignUpDonePage />} />
+
+      {/* 인증 필요 페이지 */}
       <Route
         path="/reservation/departments"
-        element={<DepartmentSelectPage />}
+        element={
+          <ProtectedRoute>
+            <DepartmentSelectPage />
+          </ProtectedRoute>
+        }
       />
-      <Route path="/reception/departments" element={<DepartmentSelectPage />} />
-      <Route path="/reservation/doctors" element={<DoctorSelectPage />} />
-      <Route path="/reception/doctors" element={<DoctorSelectPage />} />
-      <Route path="/reservation/datetime" element={<DateTimeSelectPage />} />
-      <Route path="/reception/symptom" element={<SymptomSelectPage />} />
+      <Route
+        path="/reception/departments"
+        element={
+          <ProtectedRoute>
+            <DepartmentSelectPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reservation/doctors"
+        element={
+          <ProtectedRoute>
+            <DoctorSelectPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reception/doctors"
+        element={
+          <ProtectedRoute>
+            <DoctorSelectPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reservation/datetime"
+        element={
+          <ProtectedRoute>
+            <DateTimeSelectPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reception/symptom"
+        element={
+          <ProtectedRoute>
+            <SymptomSelectPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/reservation/complete"
-        element={<ReservationCompletePage />}
+        element={
+          <ProtectedRoute>
+            <ReservationCompletePage />
+          </ProtectedRoute>
+        }
       />
-      <Route path="/reception/complete" element={<ReceptionCompletePage />} />{" "}
-      <Route path="/reservation/list" element={<ReservationListPage />} />
-      <Route path="/reception/list" element={<ReceptionListPage />} />
-      <Route path="/prescription" element={<PrescriptionPage />} />
-      <Route path="/pharmacy" element={<PharmacySearchPage />} />
-      <Route path="/dispensing" element={<DispensingStatusPage />} />
+      <Route
+        path="/reception/complete"
+        element={
+          <ProtectedRoute>
+            <ReceptionCompletePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reservation/list"
+        element={
+          <ProtectedRoute>
+            <ReservationListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reception/list"
+        element={
+          <ProtectedRoute>
+            <ReceptionListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/prescription"
+        element={
+          <ProtectedRoute>
+            <PrescriptionPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/pharmacy"
+        element={
+          <ProtectedRoute>
+            <PharmacySearchPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dispensing"
+        element={
+          <ProtectedRoute>
+            <DispensingStatusPage />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
