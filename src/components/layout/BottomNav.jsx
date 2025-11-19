@@ -3,11 +3,21 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const TABS = [
-  { id: "reservation", label: "예약", path: "/reservation" },
-  { id: "reception", label: "접수", path: "/reception" },
+  { id: "reservation", label: "예약", path: "/reservation/departments" },
+  { id: "reception", label: "접수", path: "/reception/departments" },
   { id: "home", label: "홈", path: "/" },
-  { id: "prescription", label: "처방전", path: "/prescription", relatedPaths: ["/prescription", "/pharmacy", "/dispensing"] },
-  { id: "mypage", label: "마이페이지", path: "/mypage" },
+  {
+    id: "prescription",
+    label: "처방전",
+    path: "/prescription",
+    relatedPaths: ["/prescription", "/pharmacy", "/dispensing"],
+  },
+  {
+    id: "mypage",
+    label: "마이페이지",
+    path: "/mypage",
+    relatedPaths: ["/reservation/list", "/reception/list"],
+  },
 ];
 
 // 탭별 아이콘 경로 (public 기준)
@@ -39,36 +49,76 @@ function BottomNav() {
   const navigate = useNavigate();
   const currentPath = location.pathname || "/";
 
+  const handleTabClick = (tab) => {
+    // 마이페이지 클릭 시 예약 리스트로 이동
+    if (tab.id === "mypage") {
+      navigate("/reservation/list");
+      return;
+    }
+
+    // 예약 또는 접수 클릭 시 from 정보 전달
+    if (tab.id === "reservation" || tab.id === "reception") {
+      navigate(tab.path, {
+        state: { from: tab.id },
+      });
+    } else {
+      navigate(tab.path);
+    }
+  };
+
+  // 활성화 상태 체크 함수
+  const isTabActive = (tab) => {
+    // 홈은 정확히 일치
+    if (tab.path === "/") {
+      return currentPath === "/";
+    }
+
+    // 마이페이지는 /reservation/list 또는 /reception/list에서 활성화
+    if (tab.id === "mypage") {
+      return tab.relatedPaths.some((path) => currentPath === path);
+    }
+
+    // 처방전 탭은 관련 경로들에서 모두 활성화
+    if (tab.relatedPaths && tab.id !== "mypage") {
+      return tab.relatedPaths.some((path) => currentPath.startsWith(path));
+    }
+
+    // 예약/접수는 list 페이지를 제외하고 departments를 포함한 prefix로 체크
+    if (tab.id === "reservation") {
+      return (
+        currentPath.startsWith("/reservation") &&
+        currentPath !== "/reservation/list"
+      );
+    }
+    if (tab.id === "reception") {
+      return (
+        currentPath.startsWith("/reception") &&
+        currentPath !== "/reception/list"
+      );
+    }
+
+    // 나머지는 prefix로 체크
+    return currentPath.startsWith(tab.path);
+  };
+
   return (
-    <nav 
+    <nav
       className="border-t border-slate-200 bg-white shrink-0"
       style={{
-        position: 'fixed',
+        position: "fixed",
         bottom: 0,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '100%',
-        maxWidth: '393px',
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "100%",
+        maxWidth: "393px",
         zIndex: 1000,
-        backgroundColor: '#ffffff'
+        backgroundColor: "#ffffff",
       }}
     >
       <div className="mx-auto max-w-[393px]">
         <div className="grid grid-cols-5 items-center">
           {TABS.map((tab) => {
-            // 홈(/)은 정확히 일치
-            // 처방전 탭은 관련 경로들(/prescription, /pharmacy, /dispensing)에서 모두 활성화
-            // 나머지는 prefix로 체크
-            let isActive;
-            if (tab.path === "/") {
-              isActive = currentPath === "/";
-            } else if (tab.relatedPaths) {
-              // 관련 경로가 정의된 경우 (처방전 탭)
-              isActive = tab.relatedPaths.some(path => currentPath.startsWith(path));
-            } else {
-              isActive = currentPath.startsWith(tab.path);
-            }
-
+            const isActive = isTabActive(tab);
             const icon = TAB_ICONS[tab.id];
             const iconSrc = icon
               ? isActive
@@ -80,10 +130,12 @@ function BottomNav() {
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => navigate(tab.path)}
+                onClick={() => handleTabClick(tab)}
                 className="relative flex flex-col items-center justify-center py-1.5 text-xs"
+                aria-label={tab.label}
+                aria-current={isActive ? "page" : undefined}
               >
-                {/* 활성 탭 하이라이트 배경 (원형 느낌) */}
+                {/* 활성 탭 하이라이트 배경 (원형) */}
                 {isActive && (
                   <span className="absolute inset-y-0 left-1/2 -translate-x-1/2 my-0.5 h-12 w-12 rounded-full bg-sky-50" />
                 )}
@@ -93,8 +145,9 @@ function BottomNav() {
                   {iconSrc ? (
                     <img
                       src={iconSrc}
-                      alt={tab.label}
+                      alt=""
                       className="relative z-10 h-6 w-6 object-contain"
+                      aria-hidden="true"
                     />
                   ) : (
                     <span
