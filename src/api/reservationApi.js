@@ -12,7 +12,7 @@ export const getAvailableTimeSlots = async (doctorId, date) => {
         params: { date },
       }
     );
-    console.log("[API] getAvailableTimeSlots 응답:", response.data);
+    // console.log("[API] getAvailableTimeSlots 응답:", response.data);
     return response.data;
   } catch (error) {
     console.error("[API] getAvailableTimeSlots 에러:", error);
@@ -53,7 +53,7 @@ export const createReservation = async (reservationData) => {
     };
 
     const response = await apiClient.post("/reservation", requestBody);
-    console.log("[API] createReservation 응답:", response.data);
+    // console.log("[API] createReservation 응답:", response.data);
     return response.data;
   } catch (error) {
     console.error("[API] createReservation 에러:", error);
@@ -95,7 +95,7 @@ export const getReservationList = async ({
     const response = await apiClient.get("/reservation/list", {
       params: { status, page, size },
     });
-    console.log("[API] getReservationList 응답:", response.data);
+    // console.log("[API] getReservationList 응답:", response.data);
     return response.data;
   } catch (error) {
     console.error("[API] getReservationList 에러:", error);
@@ -122,10 +122,10 @@ export const cancelReservation = async (reservationId) => {
 export const getReservationDetail = async (reservationId) => {
   try {
     const response = await apiClient.get(`/reservation/${reservationId}`);
-    console.log(
-      `[API] getReservationDetail(${reservationId}) 응답:`,
-      response.data
-    );
+    // console.log(
+    //   `[API] getReservationDetail(${reservationId}) 응답:`,
+    //   response.data
+    // );
     return response.data;
   } catch (error) {
     console.error(`[API] getReservationDetail(${reservationId}) 에러:`, error);

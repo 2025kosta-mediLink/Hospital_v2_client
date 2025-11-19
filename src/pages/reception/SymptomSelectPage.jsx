@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import BottomNav from "../../components/layout/BottomNav";
-import ReceptionConfirmModal from "../../components/reception/ReceptionConfirmModal"; // ✅ 추가
+import ReceptionConfirmModal from "../../components/reception/ReceptionConfirmModal";
 import { getSymptoms } from "../../api/symptomApi";
 import { createReception, getReceptionDetail } from "../../api/receptionApi";
 
@@ -16,7 +16,7 @@ export default function SymptomSelectPage() {
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [noteToDoctor, setNoteToDoctor] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false); // ✅ 추가
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const maxLength = 500;
 
@@ -29,25 +29,26 @@ export default function SymptomSelectPage() {
     setIsLoading(true);
     try {
       const result = await getSymptoms();
-      if (result.isSuccess) {
-        setSymptoms(result.data || []);
+
+      if (result.isSuccess && result.data) {
+        setSymptoms(result.data);
+      } else if (Array.isArray(result)) {
+        setSymptoms(result);
+      } else if (result.data && Array.isArray(result.data)) {
+        setSymptoms(result.data);
+      } else {
+        setSymptoms([]);
       }
     } catch (error) {
       console.error("증상 목록 로드 실패:", error);
 
-      // 401 에러면 로그인 페이지로
       if (error.response?.status === 401) {
-        alert("로그인이 필요합니다.");
-        navigate("/login", {
-          state: {
-            from: location.pathname,
-            message: "증상 입력을 위해 로그인이 필요합니다.",
-          },
-        });
-        return;
+        alert("증상 목록 조회 권한이 없습니다. 백엔드 설정을 확인해주세요.");
+      } else {
+        alert("증상 목록을 불러오는데 실패했습니다.");
       }
 
-      alert("증상 목록을 불러오는데 실패했습니다.");
+      setSymptoms([]);
     } finally {
       setIsLoading(false);
     }
@@ -57,7 +58,7 @@ export default function SymptomSelectPage() {
   const toggleSymptom = (symptomId) => {
     setSelectedSymptoms((prev) =>
       prev.includes(symptomId)
-        ? prev.filter((id) => id !== symptomId) // ✅ 오타 수정 (sympathomId → symptomId)
+        ? prev.filter((id) => id !== symptomId)
         : [...prev, symptomId]
     );
   };
@@ -70,7 +71,7 @@ export default function SymptomSelectPage() {
     }
   };
 
-  // ✅ "다음" 버튼 클릭 → 모달 열기 (기존 handleSubmit을 handleNext로 변경)
+  // "다음" 버튼 클릭 → 모달 열기
   const handleNext = (e) => {
     e.preventDefault();
 
@@ -79,11 +80,10 @@ export default function SymptomSelectPage() {
       return;
     }
 
-    // 모달 열기
     setIsModalOpen(true);
   };
 
-  // ✅ 모달에서 "바로 접수하기" 클릭 → 실제 API 호출
+  // 모달에서 "바로 접수하기" 클릭 → 실제 API 호출
   const handleConfirmReception = async () => {
     try {
       const createResult = await createReception({
@@ -99,14 +99,11 @@ export default function SymptomSelectPage() {
           createResult.data?.id ||
           createResult.data;
 
-        // 접수 상세 조회
         const detailResult = await getReceptionDetail(receptionId);
 
         if (detailResult.isSuccess) {
-          // 모달 닫기
           setIsModalOpen(false);
 
-          // 완료 페이지로 이동
           navigate("/reception/complete", {
             state: {
               data: {
@@ -131,12 +128,26 @@ export default function SymptomSelectPage() {
       }
     } catch (error) {
       console.error("접수 생성 실패:", error);
+
+      if (error.response?.status === 401) {
+        setIsModalOpen(false);
+        alert("로그인이 필요합니다.");
+        navigate("/login", {
+          state: {
+            from: location.pathname,
+            returnState: location.state,
+            message: "접수를 위해 로그인이 필요합니다.",
+          },
+        });
+        return;
+      }
+
       alert(error.message || "접수에 실패했습니다.");
       throw error;
     }
   };
 
-  // ✅ 모달에 전달할 데이터 준비
+  // 모달에 전달할 데이터 준비
   const receptionData = {
     departmentName,
     doctorName,
@@ -239,9 +250,9 @@ export default function SymptomSelectPage() {
         <div className="fixed bottom-[76px] left-1/2 -translate-x-1/2 w-full max-w-[393px] px-4 py-4 bg-white border-t border-gray-100 z-40">
           <button
             id="nextBtn"
-            type="button" // ✅ submit → button으로 변경
-            onClick={handleNext} // ✅ handleSubmit → handleNext로 변경
-            disabled={noteToDoctor.length > maxLength} // ✅ isSubmitting 제거
+            type="button"
+            onClick={handleNext}
+            disabled={noteToDoctor.length > maxLength}
             className="flex items-center justify-center w-full h-12 px-0 bg-[#2563EB] text-white text-base font-bold rounded-xl hover:brightness-[0.98] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             다음
@@ -253,7 +264,7 @@ export default function SymptomSelectPage() {
           <BottomNav />
         </div>
 
-        {/* ✅ 접수 확인 모달 추가 */}
+        {/* 접수 확인 모달 */}
         <ReceptionConfirmModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}

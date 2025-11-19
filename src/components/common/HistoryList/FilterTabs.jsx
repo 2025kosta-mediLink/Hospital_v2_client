@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 /**
  * 월/상태 필터 컴포넌트
@@ -25,154 +25,151 @@ export default function FilterTabs({
     reception: [
       { value: "ALL", label: "전체" },
       { value: "WAITING", label: "대기중" },
-      { value: "COMPLETED", label: "진료완료" },
+      { value: "IN_SERVICE", label: "진료중" },
+      { value: "DONE", label: "진료완료" },
       { value: "CANCELLED", label: "취소" },
     ],
   };
 
   // 외부 클릭 감지
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (monthRef.current && !monthRef.current.contains(e.target)) {
+    const handleClickOutside = (event) => {
+      if (monthRef.current && !monthRef.current.contains(event.target)) {
         setIsMonthOpen(false);
       }
-      if (statusRef.current && !statusRef.current.contains(e.target)) {
+      if (statusRef.current && !statusRef.current.contains(event.target)) {
         setIsStatusOpen(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const getMonthLabel = (value) => {
-    if (!value || value === "ALL") return "전체";
+    if (value === "ALL") return "전체";
     const option = monthOptions.find((opt) => opt.value === value);
-    return option ? option.label : value;
+    return option ? option.label : "전체";
   };
 
   const getStatusLabel = (value) => {
-    if (!value || value === "ALL") return "전체";
     const option = statusOptions[type].find((opt) => opt.value === value);
-    return option ? option.label : value;
+    return option ? option.label : "전체";
   };
 
   return (
-    <div className="px-5 py-4 bg-white">
-      <div className="flex gap-2.5">
-        {/* 월 필터 */}
-        <div ref={monthRef} className="relative">
-          <button
-            onClick={() => {
-              setIsMonthOpen(!isMonthOpen);
-              setIsStatusOpen(false);
-            }}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-[#F6F8FB] border border-gray-200 rounded-full text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors"
+    <div className="flex gap-2 px-4 py-3 bg-white border-b border-gray-200">
+      {/* 월 필터 */}
+      <div ref={monthRef} className="relative">
+        <button
+          onClick={() => setIsMonthOpen(!isMonthOpen)}
+          className="flex items-center gap-1 px-3 py-2 bg-gray-50 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <span>{getMonthLabel(selectedMonth)}</span>
+          <svg
+            className={`w-4 h-4 transition-transform ${
+              isMonthOpen ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <span>{getMonthLabel(selectedMonth)}</span>
-            <svg
-              className={`w-3 h-3 transition-transform ${
-                isMonthOpen ? "rotate-180" : ""
-              }`}
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
 
-          {isMonthOpen && (
-            <ul className="absolute top-full left-0 mt-1.5 min-w-[160px] bg-white border border-gray-200 rounded-xl shadow-lg p-1.5 z-10">
-              <li
+        {isMonthOpen && (
+          <div className="absolute top-full left-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+            <button
+              onClick={() => {
+                onFilterChange({ month: "ALL", status: selectedStatus });
+                setIsMonthOpen(false);
+              }}
+              className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
+                selectedMonth === "ALL"
+                  ? "text-blue-600 font-semibold"
+                  : "text-gray-700"
+              }`}
+            >
+              전체
+            </button>
+            {monthOptions.map((option) => (
+              <button
+                key={option.value}
                 onClick={() => {
-                  onFilterChange({ month: "ALL", status: selectedStatus });
+                  onFilterChange({
+                    month: option.value,
+                    status: selectedStatus,
+                  });
                   setIsMonthOpen(false);
                 }}
-                className={`px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-colors ${
-                  !selectedMonth || selectedMonth === "ALL"
-                    ? "bg-blue-50 text-blue-600 font-semibold"
-                    : "hover:bg-gray-50"
+                className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
+                  selectedMonth === option.value
+                    ? "text-blue-600 font-semibold"
+                    : "text-gray-700"
                 }`}
               >
-                전체
-              </li>
-              {monthOptions.map((option) => (
-                <li
-                  key={option.value}
-                  onClick={() => {
-                    onFilterChange({
-                      month: option.value,
-                      status: selectedStatus,
-                    });
-                    setIsMonthOpen(false);
-                  }}
-                  className={`px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-colors ${
-                    selectedMonth === option.value
-                      ? "bg-blue-50 text-blue-600 font-semibold"
-                      : "hover:bg-gray-50"
-                  }`}
-                >
-                  {option.label}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+                {option.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
-        {/* 상태 필터 */}
-        <div ref={statusRef} className="relative">
-          <button
-            onClick={() => {
-              setIsStatusOpen(!isStatusOpen);
-              setIsMonthOpen(false);
-            }}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-[#F6F8FB] border border-gray-200 rounded-full text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors"
+      {/* 상태 필터 */}
+      <div ref={statusRef} className="relative">
+        <button
+          onClick={() => setIsStatusOpen(!isStatusOpen)}
+          className="flex items-center gap-1 px-3 py-2 bg-gray-50 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <span>{getStatusLabel(selectedStatus)}</span>
+          <svg
+            className={`w-4 h-4 transition-transform ${
+              isStatusOpen ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <span>{getStatusLabel(selectedStatus)}</span>
-            <svg
-              className={`w-3 h-3 transition-transform ${
-                isStatusOpen ? "rotate-180" : ""
-              }`}
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
 
-          {isStatusOpen && (
-            <ul className="absolute top-full left-0 mt-1.5 min-w-[160px] bg-white border border-gray-200 rounded-xl shadow-lg p-1.5 z-10">
-              {statusOptions[type].map((option) => (
-                <li
-                  key={option.value}
-                  onClick={() => {
-                    onFilterChange({
-                      month: selectedMonth,
-                      status: option.value,
-                    });
-                    setIsStatusOpen(false);
-                  }}
-                  className={`px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-colors ${
-                    (!selectedStatus && option.value === "ALL") ||
-                    selectedStatus === option.value
-                      ? "bg-blue-50 text-blue-600 font-semibold"
-                      : "hover:bg-gray-50"
-                  }`}
-                >
-                  {option.label}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        {isStatusOpen && (
+          <div className="absolute top-full left-0 mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+            {statusOptions[type].map((option) => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  onFilterChange({
+                    month: selectedMonth,
+                    status: option.value,
+                  });
+                  setIsStatusOpen(false);
+                }}
+                className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${
+                  selectedStatus === option.value
+                    ? "text-blue-600 font-semibold"
+                    : "text-gray-700"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

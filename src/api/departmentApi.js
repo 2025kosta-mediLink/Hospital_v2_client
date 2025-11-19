@@ -7,7 +7,6 @@ import apiClient from "./client";
 export const getDepartmentList = async () => {
   try {
     const response = await apiClient.get("/department/list");
-    console.log("진료과 목록 조회 응답:", response.data);
     return response.data;
   } catch (error) {
     console.error("getDepartmentList error:", error);

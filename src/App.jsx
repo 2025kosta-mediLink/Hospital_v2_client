@@ -10,11 +10,12 @@ import DoctorSelectPage from "./pages/hospital/DoctorSelectPage";
 import DateTimeSelectPage from "./pages/reservation/DateTimeSelectPage";
 import ReservationCompletePage from "./pages/reservation/ReservationCompletePage";
 import ReservationListPage from "./pages/reservation/ReservationListPage";
+import ReceptionListPage from "./pages/reception/ReceptionListPage";
 import PrescriptionPage from "./pages/prescription/PrescriptionPage";
 import PharmacySearchPage from "./pages/pharmacy/PharmacySearchPage";
 import DispensingStatusPage from "./pages/dispensing/DispensingStatusPage";
 import SymptomSelectPage from "./pages/reception/SymptomSelectPage";
-import ReceptionCompletePage from "./pages/reception/ReceptionCompletePage"; // ✅ 추가
+import ReceptionCompletePage from "./pages/reception/ReceptionCompletePage";
 
 function App() {
   return (
@@ -38,8 +39,8 @@ function App() {
         element={<ReservationCompletePage />}
       />
       <Route path="/reception/complete" element={<ReceptionCompletePage />} />{" "}
-      {/* ✅ 추가 */}
       <Route path="/reservation/list" element={<ReservationListPage />} />
+      <Route path="/reception/list" element={<ReceptionListPage />} />
       <Route path="/prescription" element={<PrescriptionPage />} />
       <Route path="/pharmacy" element={<PharmacySearchPage />} />
       <Route path="/dispensing" element={<DispensingStatusPage />} />

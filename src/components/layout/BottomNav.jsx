@@ -12,7 +12,12 @@ const TABS = [
     path: "/prescription",
     relatedPaths: ["/prescription", "/pharmacy", "/dispensing"],
   },
-  { id: "mypage", label: "마이페이지", path: "/mypage" },
+  {
+    id: "mypage",
+    label: "마이페이지",
+    path: "/mypage",
+    relatedPaths: ["/reservation/list", "/reception/list"],
+  },
 ];
 
 // 탭별 아이콘 경로 (public 기준)
@@ -45,6 +50,12 @@ function BottomNav() {
   const currentPath = location.pathname || "/";
 
   const handleTabClick = (tab) => {
+    // 마이페이지 클릭 시 예약 리스트로 이동
+    if (tab.id === "mypage") {
+      navigate("/reservation/list");
+      return;
+    }
+
     // 예약 또는 접수 클릭 시 from 정보 전달
     if (tab.id === "reservation" || tab.id === "reception") {
       navigate(tab.path, {
@@ -62,9 +73,28 @@ function BottomNav() {
       return currentPath === "/";
     }
 
+    // 마이페이지는 /reservation/list 또는 /reception/list에서 활성화
+    if (tab.id === "mypage") {
+      return tab.relatedPaths.some((path) => currentPath === path);
+    }
+
     // 처방전 탭은 관련 경로들에서 모두 활성화
-    if (tab.relatedPaths) {
+    if (tab.relatedPaths && tab.id !== "mypage") {
       return tab.relatedPaths.some((path) => currentPath.startsWith(path));
+    }
+
+    // 예약/접수는 list 페이지를 제외하고 departments를 포함한 prefix로 체크
+    if (tab.id === "reservation") {
+      return (
+        currentPath.startsWith("/reservation") &&
+        currentPath !== "/reservation/list"
+      );
+    }
+    if (tab.id === "reception") {
+      return (
+        currentPath.startsWith("/reception") &&
+        currentPath !== "/reception/list"
+      );
     }
 
     // 나머지는 prefix로 체크
@@ -99,22 +129,43 @@ function BottomNav() {
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => handleTabClick(tab)}
-                className="flex flex-col items-center justify-center gap-1 flex-1 py-2 cursor-pointer transition-colors"
+                className="relative flex flex-col items-center justify-center py-1.5 text-xs"
                 aria-label={tab.label}
                 aria-current={isActive ? "page" : undefined}
               >
-                {iconSrc && (
-                  <img
-                    src={iconSrc}
-                    alt=""
-                    className="w-6 h-6 object-contain"
-                    aria-hidden="true"
-                  />
+                {/* 활성 탭 하이라이트 배경 (원형) */}
+                {isActive && (
+                  <span className="absolute inset-y-0 left-1/2 -translate-x-1/2 my-0.5 h-12 w-12 rounded-full bg-sky-50" />
                 )}
+
+                {/* 아이콘 */}
+                <span className="relative flex items-center justify-center">
+                  {iconSrc ? (
+                    <img
+                      src={iconSrc}
+                      alt=""
+                      className="relative z-10 h-6 w-6 object-contain"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <span
+                      className={`relative z-10 flex h-5 w-5 items-center justify-center rounded-full border text-[10px] ${
+                        isActive
+                          ? "border-sky-500 text-sky-500 bg-white"
+                          : "border-slate-300 text-slate-400 bg-slate-50"
+                      }`}
+                    >
+                      ●
+                    </span>
+                  )}
+                </span>
+
+                {/* 라벨 */}
                 <span
-                  className={`text-[11px] font-medium ${
-                    isActive ? "text-blue-600" : "text-slate-400"
+                  className={`relative z-10 mt-0.5 text-[11px] font-medium ${
+                    isActive ? "text-sky-600" : "text-slate-400"
                   }`}
                 >
                   {tab.label}

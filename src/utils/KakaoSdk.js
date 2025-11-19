@@ -29,8 +29,8 @@ export const initKakaoSdk = () => {
       if (kakaoKey) {
         try {
           window.Kakao.init(kakaoKey);
-          console.log("✅ 카카오 SDK 초기화 완료");
-          console.log("✅ 초기화 상태:", window.Kakao.isInitialized());
+          // console.log("✅ 카카오 SDK 초기화 완료");
+          // console.log("✅ 초기화 상태:", window.Kakao.isInitialized());
         } catch (error) {
           console.error("❌ 카카오 SDK 초기화 에러:", error);
         }

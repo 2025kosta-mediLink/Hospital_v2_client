@@ -4,29 +4,26 @@ import Header from "../../components/layout/Header";
 import BottomNav from "../../components/layout/BottomNav";
 import FilterTabs from "../../components/common/HistoryList/FilterTabs";
 import HistoryList from "../../components/common/HistoryList";
-import {
-  getReservationList,
-  cancelReservation,
-} from "../../api/reservationApi";
+import { getReceptionList, cancelReception } from "../../api/receptionApi";
 import { shareToKakao } from "../../utils/kakaoSdk";
 
-export default function ReservationListPage() {
+export default function ReceptionListPage() {
   const navigate = useNavigate();
   const [selectedMonth, setSelectedMonth] = useState("ALL");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [monthOptions, setMonthOptions] = useState([]);
   const [groupedData, setGroupedData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false); // ✅ 추가
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // 날짜/시간 파싱 함수
-  const parseDateTime = (appointmentAt) => {
-    if (!appointmentAt) return { date: "", time: "", yearMonth: "" };
+  const parseDateTime = (createdAt) => {
+    if (!createdAt) return { date: "", time: "", yearMonth: "" };
 
-    // "2025-11-29T15:30:00" → { date: "2025-11-29", time: "15:30", yearMonth: "2025-11" }
-    const [datePart, timePart] = appointmentAt.split("T");
+    // "2025-11-18T20:32:27" → { date: "2025-11-18", time: "20:32", yearMonth: "2025-11" }
+    const [datePart, timePart] = createdAt.split("T");
     const yearMonth = datePart.substring(0, 7); // "2025-11"
-    const time = timePart.substring(0, 5); // "15:30"
+    const time = timePart.substring(0, 5); // "20:32"
 
     return {
       date: datePart,
@@ -35,7 +32,7 @@ export default function ReservationListPage() {
     };
   };
 
-  // 날짜 라벨 생성 (2025년 11월 29일 (금))
+  // 날짜 라벨 생성 (2025년 11월 18일 (월))
   const formatDateLabel = (dateStr) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
@@ -47,14 +44,14 @@ export default function ReservationListPage() {
   };
 
   // 데이터 변환 함수
-  const transformReservationData = (items) => {
+  const transformReceptionData = (items) => {
     return items.map((item) => {
-      const { date, time, yearMonth } = parseDateTime(item.appointmentAt);
+      const { date, time, yearMonth } = parseDateTime(item.createdAt);
 
       return {
         ...item,
-        appointmentDate: date,
-        appointmentTime: time,
+        receptionDate: date,
+        receptionTime: time,
         dateLabel: formatDateLabel(date),
         timeLabel: time,
         yearMonth: yearMonth,
@@ -80,16 +77,16 @@ export default function ReservationListPage() {
         params.status = status;
       }
 
-      const result = await getReservationList(params);
+      const result = await getReceptionList(params);
 
       if (result.isSuccess) {
         const rawItems = result.data || [];
 
-        // 1️⃣ 데이터 변환 (appointmentAt → appointmentDate, appointmentTime, yearMonth)
-        const transformedItems = transformReservationData(rawItems);
+        // 1️⃣ 데이터 변환 (createdAt → receptionDate, receptionTime, yearMonth)
+        const transformedItems = transformReceptionData(rawItems);
 
         // 2️⃣ 월 옵션 생성 (첫 로드 시)
-        if (monthOptions.length === 0) {
+        if (monthOptions.length === 0 && transformedItems.length > 0) {
           const months = new Set();
           transformedItems.forEach((item) => {
             if (item.yearMonth) {
@@ -122,17 +119,20 @@ export default function ReservationListPage() {
         // 4️⃣ 각 그룹 내에서 날짜 내림차순 정렬
         Object.keys(grouped).forEach((key) => {
           grouped[key].sort((a, b) => {
-            return new Date(b.appointmentDate) - new Date(a.appointmentDate);
+            return (
+              new Date(b.receptionDate + "T" + b.receptionTime) -
+              new Date(a.receptionDate + "T" + a.receptionTime)
+            );
           });
         });
 
-        // console.log("✅ 변환된 데이터:", transformedItems);
-        // console.log("✅ 그룹핑된 데이터:", grouped);
+        // console.log("✅ 변환된 접수 데이터:", transformedItems);
+        // console.log("✅ 그룹핑된 접수 데이터:", grouped);
 
         setGroupedData(grouped);
       }
     } catch (error) {
-      console.error("예약 목록 로드 에러:", error);
+      console.error("접수 목록 로드 에러:", error);
       alert(error.message || "목록을 불러오는데 실패했습니다.");
     } finally {
       setIsLoading(false);
@@ -149,26 +149,26 @@ export default function ReservationListPage() {
     setSelectedStatus(status || "ALL");
   };
 
-  // 예약 취소
-  const handleCancel = async (reservationId) => {
-    if (!confirm("예약을 취소하시겠습니까?")) {
+  // 접수 취소
+  const handleCancel = async (item) => {
+    if (!confirm("접수를 취소하시겠습니까?")) {
       return;
     }
 
     setIsDeleting(true);
     try {
-      const result = await cancelReservation(reservationId);
+      const result = await cancelReception(item.receptionId, "사용자 취소");
 
       if (result.isSuccess) {
-        alert("예약이 취소되었습니다.");
-        // 목록 새로고침 (loadData 함수 사용)
+        alert("접수가 취소되었습니다.");
+        // 목록 새로고침
         await loadData(selectedMonth, selectedStatus);
       } else {
-        alert(result.message || "예약 취소에 실패했습니다.");
+        alert(result.message || "접수 취소에 실패했습니다.");
       }
     } catch (error) {
-      console.error("예약 취소 실패:", error);
-      alert(error.response?.data?.message || "예약 취소에 실패했습니다.");
+      console.error("접수 취소 실패:", error);
+      alert(error.message || "접수 취소에 실패했습니다.");
     } finally {
       setIsDeleting(false);
     }
@@ -179,9 +179,17 @@ export default function ReservationListPage() {
     const shareUrl = window.location.href;
 
     shareToKakao({
-      title: "MediLink 병원 예약 일정 안내",
-      description: `📍 ${item.departmentName} - ${item.doctorName} 교수\n📅 ${item.dateLabel}\n⏰ ${item.timeLabel}`,
-      imageUrl: "https://your-image-url.com/hospital-logo.png", // ✅ 여기에 실제 이미지 URL
+      title: "MediLink 병원 접수 일정 안내",
+      description: `📍 ${item.departmentName} - ${item.doctorName} 교수\n📅 ${
+        item.dateLabel
+      }\n⏰ ${item.timeLabel}\n📋 접수번호: ${item.receptionNo}\n상태: ${
+        item.status === "WAITING"
+          ? "대기중"
+          : item.status === "COMPLETED"
+          ? "진료완료"
+          : "취소"
+      }`,
+      imageUrl: "https://your-image-url.com/hospital-logo.png",
       linkUrl: shareUrl,
     });
   };
@@ -192,20 +200,20 @@ export default function ReservationListPage() {
 
       {/* 탭 네비게이션 (예약/접수) */}
       <nav className="grid grid-cols-2 h-12 border-b border-gray-200 bg-white">
-        <button className="relative flex items-center justify-center text-sm font-semibold text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-blue-600 after:rounded-full">
-          예약내역
-        </button>
         <button
-          onClick={() => navigate("/reception/list")}
+          onClick={() => navigate("/reservation/list")}
           className="flex items-center justify-center text-sm font-semibold text-gray-500"
         >
+          예약내역
+        </button>
+        <button className="relative flex items-center justify-center text-sm font-semibold text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-blue-600 after:rounded-full">
           접수내역
         </button>
       </nav>
 
       {/* 필터 */}
       <FilterTabs
-        type="reservation"
+        type="reception"
         selectedMonth={selectedMonth}
         selectedStatus={selectedStatus}
         monthOptions={monthOptions}
@@ -220,7 +228,7 @@ export default function ReservationListPage() {
           </div>
         ) : (
           <HistoryList
-            type="reservation"
+            type="reception"
             groupedData={groupedData}
             onCancel={handleCancel}
             onShare={handleShare}

@@ -14,7 +14,7 @@ import apiClient from "./client";
 export const createReception = async (receptionData) => {
   try {
     const response = await apiClient.post("/receptions", receptionData);
-    console.log("[API] createReception 응답:", response.data);
+    // console.log("[API] createReception 응답:", response.data);
     return response.data;
   } catch (error) {
     console.error("[API] createReception 에러:", error);
@@ -113,7 +113,7 @@ export const getReceptionList = async ({ year, month, status } = {}) => {
     if (status && status !== "ALL") params.status = status;
 
     const response = await apiClient.get("/receptions/list", { params });
-    console.log("[API] getReceptionList 응답:", response.data);
+    // console.log("[API] getReceptionList 응답:", response.data);
     return response.data;
   } catch (error) {
     console.error("[API] getReceptionList 에러:", error);

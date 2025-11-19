@@ -10,14 +10,33 @@ export default function HistoryCard({
   const isReservation = type === "reservation";
 
   const statusConfig = {
+    // 예약 상태
     RESERVED: { bg: "bg-[#E6F6E6]", text: "text-[#127C2E]", label: "예약완료" },
-    DONE: { bg: "bg-[#E7F0FF]", text: "text-[#1743B3]", label: "접수완료" },
+    DONE: {
+      bg: "bg-[#E7F0FF]",
+      text: "text-[#1743B3]",
+      label: isReservation ? "접수완료" : "진료완료",
+    },
     CANCELLED: { bg: "bg-[#FDECEC]", text: "text-[#B42318]", label: "취소" },
+
+    // 접수 상태
     WAITING: { bg: "bg-yellow-50", text: "text-yellow-700", label: "대기중" },
-    COMPLETED: { bg: "bg-green-50", text: "text-green-700", label: "진료완료" },
+    IN_SERVICE: { bg: "bg-blue-50", text: "text-blue-600", label: "진료중" },
   };
 
   const status = statusConfig[item.status] || statusConfig.RESERVED;
+
+  // 취소 가능 여부 체크
+  const isCancellable = () => {
+    if (isReservation) {
+      return item.status === "RESERVED";
+    } else {
+      return item.status === "WAITING";
+    }
+  };
+
+  // 버튼 표시 여부 (취소됨/완료됨 제외)
+  const showButtons = item.status !== "CANCELLED" && item.status !== "DONE";
 
   return (
     <article className="bg-white border border-gray-200 rounded-2xl p-3.5 shadow-sm">
@@ -54,16 +73,9 @@ export default function HistoryCard({
       </div>
 
       {/* 액션 버튼 */}
-      {item.status !== "CANCELLED" && (
+      {showButtons && (
         <div className="flex gap-2">
-          <button
-            onClick={() => onShare(item)}
-            className="flex-1 px-4 py-2.5 bg-[#E7F0FF] text-[#1743B3] text-sm font-semibold rounded-lg hover:bg-[#DCE6FF] transition-colors"
-          >
-            카카오톡 공유
-          </button>
-
-          {item.status === "RESERVED" && (
+          {isCancellable() && (
             <button
               onClick={() => onCancel(item)}
               className="flex-1 px-4 py-2.5 bg-[#ECEFF3] text-gray-900 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors"
@@ -71,6 +83,13 @@ export default function HistoryCard({
               취소하기
             </button>
           )}
+
+          <button
+            onClick={() => onShare(item)}
+            className="flex-1 px-4 py-2.5 bg-[#E7F0FF] text-[#1743B3] text-sm font-semibold rounded-lg hover:bg-[#DCE6FF] transition-colors"
+          >
+            카카오톡 공유
+          </button>
         </div>
       )}
     </article>

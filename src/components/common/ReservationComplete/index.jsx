@@ -22,7 +22,7 @@ export default function ReservationComplete({ type = "reservation", data }) {
     reservation: {
       title: "예약이 완료되었습니다",
       numberLabel: "예약번호",
-      listPath: "/reservations/list",
+      listPath: "/reservation/list",
       newPath: "/reservation/departments", // ✅ 수정: /hospital/departments → /reservation/departments
       listButtonText: "예약 내역 보기",
       newButtonText: "추가 예약하기",
@@ -35,7 +35,7 @@ export default function ReservationComplete({ type = "reservation", data }) {
     reception: {
       title: "접수가 완료되었습니다",
       numberLabel: "접수번호",
-      listPath: "/receptions/list",
+      listPath: "/reception/list",
       newPath: "/reception/departments",
       listButtonText: "접수 내역 보기",
       newButtonText: "추가 접수하기",
