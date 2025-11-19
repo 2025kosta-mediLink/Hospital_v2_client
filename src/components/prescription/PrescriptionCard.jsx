@@ -23,6 +23,9 @@ function PrescriptionCard({ item, onSelect, isSelected, onView, onStatusCheck })
     }
   };
 
+  // prescriptionId가 null이면 receptionId를 사용
+  const getId = () => item.prescriptionId ?? item.receptionId;
+
   const handleCardClick = (e) => {
     // 버튼이나 체크박스를 클릭한 경우는 처리하지 않음
     if (e.target.closest('button') || e.target.closest('.prescription-checkbox')) {
@@ -31,14 +34,14 @@ function PrescriptionCard({ item, onSelect, isSelected, onView, onStatusCheck })
     
     // 완료되지 않은 경우에만 선택 가능
     if (canSelect && onSelect) {
-      onSelect(item.prescriptionId, !isSelected);
+      onSelect(getId(), !isSelected);
     }
   };
 
   const handleCheckboxChange = (e) => {
     e.stopPropagation(); // 카드 클릭 이벤트와 중복 방지
     if (onSelect) {
-      onSelect(item.prescriptionId, e.target.checked);
+      onSelect(getId(), e.target.checked);
     }
   };
 
@@ -95,13 +98,13 @@ function PrescriptionCard({ item, onSelect, isSelected, onView, onStatusCheck })
         <div className="prescription-actions">
           <button className="btn-view" onClick={(e) => {
             handleButtonClick(e);
-            onView && onView(item.prescriptionId);
+            onView && onView(getId());
           }}>
             처방전 보기
           </button>
           <button className="btn-status" onClick={(e) => {
             handleButtonClick(e);
-            onStatusCheck && onStatusCheck(item.prescriptionId);
+            onStatusCheck && onStatusCheck(getId());
           }}>
             조제 상황 확인
           </button>

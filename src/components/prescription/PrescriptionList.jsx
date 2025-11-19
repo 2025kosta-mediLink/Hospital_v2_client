@@ -13,16 +13,20 @@ function PrescriptionList({ items, selectedIds, onSelect, onView, onStatusCheck 
 
   return (
     <div className="prescription-cards">
-      {items.map((item) => (
-        <PrescriptionCard
-          key={item.prescriptionId}
-          item={item}
-          isSelected={selectedIds?.includes(item.prescriptionId) || false}
-          onSelect={onSelect}
-          onView={onView}
-          onStatusCheck={onStatusCheck}
-        />
-      ))}
+      {items.map((item) => {
+        // prescriptionId가 null이면 receptionId를 사용
+        const id = item.prescriptionId ?? item.receptionId;
+        return (
+          <PrescriptionCard
+            key={id}
+            item={item}
+            isSelected={selectedIds?.includes(id) || false}
+            onSelect={onSelect}
+            onView={onView}
+            onStatusCheck={onStatusCheck}
+          />
+        );
+      })}
     </div>
   );
 }
