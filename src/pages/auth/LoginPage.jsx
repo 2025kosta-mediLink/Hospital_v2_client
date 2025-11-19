@@ -2,11 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AppLayout from "../../components/layout/AppLayout";
-import { login } from "../../api/authApi";
+import { useAuth } from "../../context/AuthContext";
 
 function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login: authLogin } = useAuth();
 
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
@@ -40,13 +41,15 @@ function LoginPage() {
 
     setIsLoading(true);
     try {
-      const result = await login(id, pw);
+      const result = await authLogin(id, pw);
 
       console.log("로그인 응답:", result);
 
       // 응답 구조: { isSuccess: true, code: "200", data: { ... } }
       if (result.isSuccess) {
-        navigate("/"); // 홈으로 이동
+        // 로그인 성공 시 이전 페이지로 또는 홈으로
+        const from = location.state?.from?.pathname || "/";
+        navigate(from, { replace: true });
       } else {
         alert(result.message || "로그인에 실패했습니다.");
       }

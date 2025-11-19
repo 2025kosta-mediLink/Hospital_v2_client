@@ -92,7 +92,10 @@ export const getMyInfo = async () => {
     const response = await apiClient.get("/auth/me");
     return response.data;
   } catch (error) {
-    console.error("getMyInfo error:", error);
-    throw new Error("사용자 정보를 가져오는데 실패했습니다.");
+    // 401 에러는 로그인하지 않은 정상 상태이므로 콘솔 에러 출력 안 함
+    if (error.response?.status !== 401) {
+      console.error("getMyInfo error:", error);
+    }
+    throw error;
   }
 };
