@@ -11,6 +11,7 @@ import DoctorSelectPage from "./pages/hospital/DoctorSelectPage";
 import DateTimeSelectPage from "./pages/reservation/DateTimeSelectPage";
 import ReservationCompletePage from "./pages/reservation/ReservationCompletePage";
 import ReservationListPage from "./pages/reservation/ReservationListPage";
+import TodayReservationPage from "./pages/reservation/TodayReservationPage";
 import ReceptionListPage from "./pages/reception/ReceptionListPage";
 import PrescriptionPage from "./pages/prescription/PrescriptionPage";
 import PharmacySearchPage from "./pages/pharmacy/PharmacySearchPage";
@@ -34,6 +35,14 @@ function App() {
         element={
           <ProtectedRoute>
             <DepartmentSelectPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reservation/today"
+        element={
+          <ProtectedRoute>
+            <TodayReservationPage />
           </ProtectedRoute>
         }
       />

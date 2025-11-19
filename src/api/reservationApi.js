@@ -137,3 +137,20 @@ export const getReservationDetail = async (reservationId) => {
     throw new Error("예약 정보를 불러오는데 실패했습니다.");
   }
 };
+
+/**
+ * 오늘의 예약 목록 조회
+ * GET /api/v2/reservation/today
+ */
+export const getTodayReservations = async () => {
+  try {
+    const response = await apiClient.get("/reservation/today");
+    return response.data;
+  } catch (error) {
+    console.error("getTodayReservations error:", error);
+    throw new Error(
+      error.response?.data?.message ||
+        "오늘의 예약 조회 중 오류가 발생했습니다."
+    );
+  }
+};
