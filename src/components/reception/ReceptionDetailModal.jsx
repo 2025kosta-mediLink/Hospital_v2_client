@@ -15,7 +15,7 @@ export default function ReceptionDetailModal({ isOpen, onClose, detail }) {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900 bg-opacity-40 px-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-600/20 px-4"
       style={{ margin: 0, left: 0, right: 0 }}
       onClick={onClose}
     >
@@ -124,7 +124,7 @@ export default function ReceptionDetailModal({ isOpen, onClose, detail }) {
           )}
 
           {/* 전달사항 */}
-          {detail.noteToDoctor && (
+          {detail.noteToDoctor && detail.noteToDoctor.trim() !== "" && (
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
                 <span className="text-lg">📝</span>
