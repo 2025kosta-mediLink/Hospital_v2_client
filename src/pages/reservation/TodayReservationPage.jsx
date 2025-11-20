@@ -32,8 +32,8 @@ function TodayReservationPage() {
   };
 
   const handleReception = (reservation) => {
-    // 예약 기반 접수 전용 페이지로 이동
-    navigate("/reservation/symptom", {
+    // 통합된 증상 선택 페이지로 이동 (예약 기반 접수)
+    navigate("/reception/symptom", {
       state: {
         reservationId: reservation.reservationId,
         reservationNo: reservation.reservationNo,
@@ -62,14 +62,24 @@ function TodayReservationPage() {
   return (
     <AppLayout headerProps={headerProps}>
       <div className="p-4">
-        <div className="mb-4">
+        <div className="mb-6">
+          <h1 className="text-xl font-bold text-slate-900 mb-2">
+            오늘의 예약 내역
+          </h1>
           <div className="text-sm text-slate-600">
+            {new Date()
+              .toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+              })
+              .replace(/\. /g, "-")
+              .replace(".", "")}{" "}
+            (
             {new Date().toLocaleDateString("ko-KR", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
               weekday: "short",
             })}
+            )
           </div>
         </div>
 
