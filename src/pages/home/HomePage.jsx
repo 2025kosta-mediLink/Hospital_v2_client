@@ -1,6 +1,7 @@
 // src/pages/Home.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { List } from "react-window";
 import AppLayout from "../../components/layout/AppLayout";
 import { useAuth } from "../../context/AuthContext";
 import { getTodayReservations } from "../../api/reservationApi";
@@ -74,6 +75,63 @@ function HomeContent() {
     navigate("/reservation/today");
   };
 
+  // React Window용 리스트 아이템 렌더러 (v2 API)
+  const ReservationRow = React.memo(({ index, style, rowProps }) => {
+    const reservations = rowProps?.reservations || todayReservations;
+    const reservation = reservations[index];
+    return (
+      <div style={style}>
+        <button
+          onClick={handleReservationClick}
+          className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-colors cursor-pointer mb-2"
+        >
+          <div className="flex items-center gap-2 text-left flex-1">
+            <div className="flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-bold shrink-0">
+              {index + 1}
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap text-[13px]">
+              <span className="font-semibold text-slate-900">
+                {reservation.departmentName}
+              </span>
+              <span className="text-slate-300">•</span>
+              <span className="text-slate-600">
+                {reservation.doctorName}
+              </span>
+              <span className="text-slate-300">•</span>
+              <span className="text-blue-600 font-medium">
+                {reservation.reservationTime}
+              </span>
+            </div>
+          </div>
+          <svg
+            className="w-5 h-5 text-slate-400 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </button>
+      </div>
+    );
+  });
+
+  ReservationRow.displayName = 'ReservationRow';
+
+  // 리스트 높이 계산
+  const listHeight = useMemo(() => {
+    if (!hasAppointment) return 0;
+    const itemHeight = 68; // 아이템 높이 + gap
+    const maxHeight = 300; // 최대 높이
+    const calculatedHeight = todayReservations.length * itemHeight;
+    return Math.min(calculatedHeight, maxHeight);
+  }, [hasAppointment, todayReservations.length]);
+
   return (
     <div className="pb-5">
       {/* 히어로 영역 */}
@@ -86,51 +144,27 @@ function HomeContent() {
 
       {/* 콘텐츠 컨테이너 */}
       <div className="-mt-7 px-4 space-y-4 relative z-10">
-        {/* 오늘의 예약일정 패널 */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_28px_rgba(16,24,40,0.12),0_2px_6px_rgba(16,24,40,0.06)]">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <img
-              src="/images/icons/calendar_blue.png"
-              alt="오늘의 예약일정"
-              className="h-5 w-5 object-contain"
-            />
-            <h2 className="text-[17px] font-semibold text-slate-800">
-              오늘의 예약일정
-            </h2>
-          </div>
-
-          {loading ? (
-            <p className="text-center text-[13px] font-medium text-slate-500 py-4">
-              로딩 중...
-            </p>
-          ) : hasAppointment ? (
-            <div className="space-y-2">
-              {todayReservations.map((reservation, index) => (
-                <button
-                  key={reservation.reservationId}
-                  onClick={handleReservationClick}
-                  className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center gap-2 text-left flex-1">
-                    <div className="flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-bold flex-shrink-0">
-                      {index + 1}
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-wrap text-[13px]">
-                      <span className="font-semibold text-slate-900">
-                        {reservation.departmentName}
-                      </span>
-                      <span className="text-slate-300">•</span>
-                      <span className="text-slate-600">
-                        {reservation.doctorName}
-                      </span>
-                      <span className="text-slate-300">•</span>
-                      <span className="text-blue-600 font-medium">
-                        {reservation.reservationTime}
-                      </span>
-                    </div>
-                  </div>
+        {/* 로그인 안 된 경우: 로그인 & 가입하기 섹션 */}
+        {!user ? (
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_28px_rgba(16,24,40,0.12),0_2px_6px_rgba(16,24,40,0.06)]">
+            <button
+              onClick={() => navigate("/login")}
+              className="w-full flex items-center gap-3 hover:bg-slate-50 -m-4 p-4 rounded-2xl transition-colors"
+            >
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 shrink-0 overflow-hidden">
+                <img
+                  src="/images/logo.png"
+                  alt="로고"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="flex-1 text-left">
+                <div className="flex items-center gap-2">
+                  <span className="text-[16px] font-bold text-slate-900">
+                    로그인 & 가입하기
+                  </span>
                   <svg
-                    className="w-5 h-5 text-slate-400 flex-shrink-0"
+                    className="w-4 h-4 text-sky-500 shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -142,15 +176,59 @@ function HomeContent() {
                       d="M9 5l7 7-7 7"
                     />
                   </svg>
+                </div>
+                <p className="text-[12px] text-slate-500 mt-0.5">
+                  로그인하고 병원 서비스를 자유롭게 이용해보세요
+                </p>
+              </div>
+            </button>
+          </section>
+        ) : (
+          /* 로그인된 경우: 오늘의 예약일정 섹션 */
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_28px_rgba(16,24,40,0.12),0_2px_6px_rgba(16,24,40,0.06)]">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <img
+                    src="/images/icons/calendar_blue.png"
+                    alt="오늘의 예약일정"
+                    className="h-5 w-5 object-contain"
+                  />
+                  <h2 className="text-[17px] font-semibold text-slate-800">
+                    {user.name || user.loginId}님의 예약일정
+                  </h2>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 text-[12px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
+                >
+                  로그아웃
                 </button>
-              ))}
+              </div>
+
+              {loading ? (
+                <p className="text-center text-[13px] font-medium text-slate-500 py-4">
+                  로딩 중...
+                </p>
+              ) : hasAppointment ? (
+                <div style={{ width: '100%' }}>
+                  <List
+                    height={listHeight}
+                    rowCount={todayReservations.length}
+                    rowHeight={68}
+                    width="100%"
+                    rowComponent={ReservationRow}
+                    rowProps={{ reservations: todayReservations }}
+                  />
+                </div>
+              ) : (
+                <p className="text-center text-[13px] font-medium text-slate-500 py-4">
+                  오늘 예약된 일정이 없습니다.
+                </p>
+              )}
             </div>
-          ) : (
-            <p className="text-center text-[13px] font-medium text-slate-500 py-4">
-              오늘 예약된 일정이 없습니다.
-            </p>
-          )}
-        </section>
+          </section>
+        )}
 
         {/* 퀵 액션 */}
         <section className="grid grid-cols-3 gap-3">
@@ -202,25 +280,6 @@ function HomeContent() {
               </span>
             </div>
           </div>
-        </section>
-
-        {/* 로그인/로그아웃 버튼 */}
-        <section className="pt-2">
-          {user ? (
-            <button
-              onClick={handleLogout}
-              className="w-full rounded-full border border-slate-300 bg-white text-slate-700 py-3 text-sm font-semibold shadow-sm hover:bg-slate-50 active:scale-[0.99] transition"
-            >
-              로그아웃
-            </button>
-          ) : (
-            <button
-              onClick={() => navigate("/login")}
-              className="w-full rounded-full bg-blue-600 text-white py-3 text-sm font-semibold shadow-sm hover:bg-blue-700 active:scale-[0.99] transition"
-            >
-              로그인
-            </button>
-          )}
         </section>
 
         {/* 문의 푸터 */}
