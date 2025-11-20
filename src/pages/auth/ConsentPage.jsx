@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "../../components/layout/AppLayout";
+import AlertModal from "../../components/common/AlertModal";
 
 function ConsentPage() {
   const navigate = useNavigate();
@@ -11,6 +12,14 @@ function ConsentPage() {
   const [agreeMarketing, setAgreeMarketing] = useState(false);
   const [agreeService, setAgreeService] = useState(false);
   const [agreeTele, setAgreeTele] = useState(false);
+
+  // 알림 모달 상태
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "warning",
+  });
 
   // 전체 동의 클릭 시 모든 항목 일괄 처리
   const handleAgreeAllChange = (e) => {
@@ -35,7 +44,12 @@ function ConsentPage() {
   const handleConfirm = () => {
     // 필수 항목 체크
     if (!agreePrivacy || !agreeService || !agreeTele) {
-      alert("필수 약관에 모두 동의해 주세요.");
+      setAlertModal({
+        isOpen: true,
+        title: "필수 약관 동의",
+        message: "필수 약관에 모두 동의해 주세요.",
+        type: "warning",
+      });
       return;
     }
 
@@ -52,114 +66,125 @@ function ConsentPage() {
   };
 
   return (
-    <AppLayout headerProps={headerProps}>
-      <div className="flex flex-col gap-3 mt-3 mx-4 mb-[calc(var(--navbar-h,64px)+env(safe-area-inset-bottom)+12px)]">
-        {/* 페이지 타이틀 */}
-        <h2 className="text-[20px] font-extrabold text-slate-900 tracking-[-0.02em] mt-1.5 mb-3 ml-0.5">
-          회원가입 약관 동의
-        </h2>
+    <>
+      <AppLayout headerProps={headerProps}>
+        <div className="flex flex-col gap-3 mt-3 mx-4 mb-[calc(var(--navbar-h,64px)+env(safe-area-inset-bottom)+12px)]">
+          {/* 페이지 타이틀 */}
+          <h2 className="text-[20px] font-extrabold text-slate-900 tracking-[-0.02em] mt-1.5 mb-3 ml-0.5">
+            회원가입 약관 동의
+          </h2>
 
-        {/* 전체 동의 */}
-        <label className="flex items-center gap-2.5 px-4 py-3.5 bg-blue-50 border border-slate-200 rounded-xl cursor-pointer">
-          <CheckboxInput
-            id="agreeAll"
-            checked={agreeAll}
-            onChange={handleAgreeAllChange}
-          />
-          <strong className="text-[15px] font-bold text-slate-900">
-            전체동의
-          </strong>
-        </label>
+          {/* 전체 동의 */}
+          <label className="flex items-center gap-2.5 px-4 py-3.5 bg-blue-50 border border-slate-200 rounded-xl cursor-pointer">
+            <CheckboxInput
+              id="agreeAll"
+              checked={agreeAll}
+              onChange={handleAgreeAllChange}
+            />
+            <strong className="text-[15px] font-bold text-slate-900">
+              전체동의
+            </strong>
+          </label>
 
-        {/* 개인정보 처리방침 섹션 */}
-        <section className="bg-white border border-slate-200 rounded-xl px-4 py-3.5 flex flex-col gap-2.5">
-          <div className="flex items-center justify-start pb-1.5 border-b border-slate-200">
-            <div className="font-bold text-slate-900 text-[14px]">
-              개인정보 처리방침 동의
+          {/* 개인정보 처리방침 섹션 */}
+          <section className="bg-white border border-slate-200 rounded-xl px-4 py-3.5 flex flex-col gap-2.5">
+            <div className="flex items-center justify-start pb-1.5 border-b border-slate-200">
+              <div className="font-bold text-slate-900 text-[14px]">
+                개인정보 처리방침 동의
+              </div>
             </div>
-          </div>
 
-          <label className="flex items-start gap-2.5 cursor-pointer">
-            <CheckboxInput
-              id="agreePrivacy"
-              checked={agreePrivacy}
-              onChange={(e) => setAgreePrivacy(e.target.checked)}
-            />
-            <span className="text-[14px] text-slate-900 leading-relaxed">
-              (필수) 개인정보 처리방침 동의
-              <br />
-              <small className="text-[12px] text-slate-500 mt-1 block">
-                개인정보 수집·이용 목적/기간, 제3자 제공, 처리 위탁
-              </small>
-            </span>
-          </label>
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <CheckboxInput
+                id="agreePrivacy"
+                checked={agreePrivacy}
+                onChange={(e) => setAgreePrivacy(e.target.checked)}
+              />
+              <span className="text-[14px] text-slate-900 leading-relaxed">
+                (필수) 개인정보 처리방침 동의
+                <br />
+                <small className="text-[12px] text-slate-500 mt-1 block">
+                  개인정보 수집·이용 목적/기간, 제3자 제공, 처리 위탁
+                </small>
+              </span>
+            </label>
 
-          <label className="flex items-start gap-2.5 cursor-pointer">
-            <CheckboxInput
-              id="agreeMarketing"
-              checked={agreeMarketing}
-              onChange={(e) => setAgreeMarketing(e.target.checked)}
-            />
-            <span className="text-[14px] text-slate-900 leading-relaxed">
-              (선택) 진료/예약 알림 및 마케팅 정보 수신
-              <br />
-              <small className="text-[12px] text-slate-500 mt-1 block">
-                문자·알림 수신 동의, 언제든 해제 가능
-              </small>
-            </span>
-          </label>
-        </section>
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <CheckboxInput
+                id="agreeMarketing"
+                checked={agreeMarketing}
+                onChange={(e) => setAgreeMarketing(e.target.checked)}
+              />
+              <span className="text-[14px] text-slate-900 leading-relaxed">
+                (선택) 진료/예약 알림 및 마케팅 정보 수신
+                <br />
+                <small className="text-[12px] text-slate-500 mt-1 block">
+                  문자·알림 수신 동의, 언제든 해제 가능
+                </small>
+              </span>
+            </label>
+          </section>
 
-        {/* 서비스 이용 약관 섹션 */}
-        <section className="bg-white border border-slate-200 rounded-xl px-4 py-3.5 flex flex-col gap-2.5">
-          <div className="flex items-center justify-start pb-1.5 border-b border-slate-200">
-            <div className="font-bold text-slate-900 text-[14px]">
-              서비스 이용 약관 동의
+          {/* 서비스 이용 약관 섹션 */}
+          <section className="bg-white border border-slate-200 rounded-xl px-4 py-3.5 flex flex-col gap-2.5">
+            <div className="flex items-center justify-start pb-1.5 border-b border-slate-200">
+              <div className="font-bold text-slate-900 text-[14px]">
+                서비스 이용 약관 동의
+              </div>
             </div>
+
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <CheckboxInput
+                id="agreeService"
+                checked={agreeService}
+                onChange={(e) => setAgreeService(e.target.checked)}
+              />
+              <span className="text-[14px] text-slate-900 leading-relaxed">
+                (필수) 서비스 이용 약관 동의
+                <br />
+                <small className="text-[12px] text-slate-500 mt-1 block">
+                  회원가입, 이용자 의무, 서비스 제한, 분쟁 해결
+                </small>
+              </span>
+            </label>
+
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <CheckboxInput
+                id="agreeTele"
+                checked={agreeTele}
+                onChange={(e) => setAgreeTele(e.target.checked)}
+              />
+              <span className="text-[14px] text-slate-900 leading-relaxed">
+                (필수) 비대면진료·처방 및 본인확인 동의
+                <br />
+                <small className="text-[12px] text-slate-500 mt-1 block">
+                  진료 녹취/기록 처리, 본인확인, 전자처방전 전송
+                </small>
+              </span>
+            </label>
+          </section>
+
+          {/* 확인 버튼 */}
+          <div className="flex flex-col items-center px-6 pt-3.75 pb-5 h-[85px]">
+            <button
+              onClick={handleConfirm}
+              className="w-full rounded-full bg-blue-600 text-white py-3 text-[14px] font-semibold shadow-sm active:scale-[0.99] transition"
+            >
+              확인
+            </button>
           </div>
-
-          <label className="flex items-start gap-2.5 cursor-pointer">
-            <CheckboxInput
-              id="agreeService"
-              checked={agreeService}
-              onChange={(e) => setAgreeService(e.target.checked)}
-            />
-            <span className="text-[14px] text-slate-900 leading-relaxed">
-              (필수) 서비스 이용 약관 동의
-              <br />
-              <small className="text-[12px] text-slate-500 mt-1 block">
-                회원가입, 이용자 의무, 서비스 제한, 분쟁 해결
-              </small>
-            </span>
-          </label>
-
-          <label className="flex items-start gap-2.5 cursor-pointer">
-            <CheckboxInput
-              id="agreeTele"
-              checked={agreeTele}
-              onChange={(e) => setAgreeTele(e.target.checked)}
-            />
-            <span className="text-[14px] text-slate-900 leading-relaxed">
-              (필수) 비대면진료·처방 및 본인확인 동의
-              <br />
-              <small className="text-[12px] text-slate-500 mt-1 block">
-                진료 녹취/기록 처리, 본인확인, 전자처방전 전송
-              </small>
-            </span>
-          </label>
-        </section>
-
-        {/* 확인 버튼 */}
-        <div className="flex flex-col items-center px-6 pt-3.75 pb-5 h-[85px]">
-          <button
-            onClick={handleConfirm}
-            className="w-full rounded-full bg-blue-600 text-white py-3 text-[14px] font-semibold shadow-sm active:scale-[0.99] transition"
-          >
-            확인
-          </button>
         </div>
-      </div>
-    </AppLayout>
+      </AppLayout>
+
+      {/* 알림 모달 */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+      />
+    </>
   );
 }
 
