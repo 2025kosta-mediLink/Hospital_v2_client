@@ -214,7 +214,7 @@ export default function ReservationListPage() {
       />
 
       {/* 리스트 */}
-      <main className="flex-1 overflow-y-auto bg-gray-50">
+      <main className="flex-1 overflow-y-auto bg-gray-50 pb-20">
         {isLoading || isDeleting ? (
           <div className="flex items-center justify-center py-12 text-gray-500">
             {isDeleting ? "취소 중..." : "로딩중..."}

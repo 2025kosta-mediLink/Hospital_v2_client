@@ -54,16 +54,21 @@ export default function ReceptionConfirmModal({
 
           {/* 접수 일시 */}
           <div className="flex justify-between items-center py-2.5">
-            <span className="text-sm text-gray-500">접수 일시</span>
-            <span className="text-sm font-semibold text-gray-900">
-              {new Date().toLocaleString("ko-KR", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                weekday: "short",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+            <span className="text-sm text-gray-500 flex-shrink-0">
+              접수 일시
+            </span>
+            <span className="text-sm font-semibold text-gray-900 text-right">
+              {new Date()
+                .toLocaleString("ko-KR", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  weekday: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+                .replace(/\. /g, ".")
+                .replace(" ", " ")}
             </span>
           </div>
 

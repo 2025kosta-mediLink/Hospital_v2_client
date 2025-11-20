@@ -21,7 +21,7 @@ export default function ReservationCompletePage() {
     <div className="flex flex-col min-h-screen max-w-[393px] mx-auto bg-white">
       <Header title="예약 완료" showBack={false} />
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pb-24">
         <ReservationComplete type="reservation" data={completeData} />
       </main>
 

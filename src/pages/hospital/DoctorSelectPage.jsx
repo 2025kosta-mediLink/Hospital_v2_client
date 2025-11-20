@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import BottomNav from "../../components/layout/BottomNav";
@@ -15,6 +15,7 @@ function DoctorSelectPage() {
   const [currentDoctorIndex, setCurrentDoctorIndex] = useState(0);
   const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const tabsRef = useRef(null);
 
   // 의사 목록 조회
   useEffect(() => {
@@ -77,9 +78,23 @@ function DoctorSelectPage() {
     return () => clearInterval(interval);
   }, [allNotices.length]);
 
-  // 의사 선택
+  // 의사 선택 + 자동 스크롤
   const handleSelectDoctor = (index) => {
     setCurrentDoctorIndex(index);
+
+    // 선택된 탭을 중앙으로 스크롤
+    setTimeout(() => {
+      if (tabsRef.current) {
+        const buttons = tabsRef.current.querySelectorAll("button");
+        if (buttons[index]) {
+          buttons[index].scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "center",
+          });
+        }
+      }
+    }, 0);
   };
 
   // 다음 버튼
@@ -149,30 +164,39 @@ function DoctorSelectPage() {
         </div>
 
         {/* 의사 이름 칩 - 고정 */}
-        <div className="fixed top-[130px] left-1/2 -translate-x-1/2 w-full max-w-[393px] h-16 px-4 py-3 z-40 bg-white">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-            {doctors.map((doctor, index) => (
-              <button
-                key={doctor.doctorId}
-                onClick={() => handleSelectDoctor(index)}
-                className={`flex-none px-4 py-2 rounded-full text-sm font-semibold transition whitespace-nowrap ${
-                  currentDoctorIndex === index
-                    ? "bg-[#1E66F5] text-white shadow-md"
-                    : "bg-[#F1F5F9] text-[#475569]"
-                }`}
-              >
-                {doctor.name}
-              </button>
-            ))}
+        <div className="fixed top-[130px] left-1/2 -translate-x-1/2 w-full max-w-[393px] h-16 z-40 bg-white">
+          <div className="relative py-3">
+            <div
+              ref={tabsRef}
+              className="flex gap-2 overflow-x-auto scrollbar-hide px-4"
+            >
+              {doctors.map((doctor, index) => (
+                <button
+                  key={doctor.doctorId}
+                  onClick={() => handleSelectDoctor(index)}
+                  className={`flex-none px-5 py-2.5 rounded-full text-sm font-semibold transition whitespace-nowrap touch-manipulation ${
+                    currentDoctorIndex === index
+                      ? "bg-[#1E66F5] text-white shadow-md"
+                      : "bg-[#F1F5F9] text-[#475569]"
+                  }`}
+                >
+                  {doctor.name}
+                </button>
+              ))}
+            </div>
+            {/* 왼쪽 그라데이션 힌트 */}
+            <div className="absolute left-0 top-0 h-full w-12 bg-gradient-to-r from-white to-transparent pointer-events-none"></div>
+            {/* 오른쪽 그라데이션 힌트 */}
+            <div className="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
           </div>
         </div>
 
         {/* 의사 카드 캐러셀 영역 - 고정 */}
         <div
           className="fixed top-[194px] left-1/2 -translate-x-1/2 w-full max-w-[393px] px-4 bg-[#F8FAFC] z-30"
-          style={{ height: "470px" }}
+          style={{ height: "calc(100vh - 194px - 76px - 72px)" }}
         >
-          <div className="relative h-[410px] overflow-hidden pt-4">
+          <div className="relative h-full overflow-hidden pt-4 pb-4">
             {doctors.map((doctor, index) => {
               const rel =
                 (index - currentDoctorIndex + doctors.length) % doctors.length;
@@ -188,11 +212,11 @@ function DoctorSelectPage() {
 
               return (
                 <div key={doctor.doctorId} className={cardClass}>
-                  <div className="bg-white rounded-2xl shadow-lg p-5 mx-auto w-[90%] max-w-[360px] flex flex-col gap-4">
+                  <div className="bg-white rounded-2xl shadow-lg p-5 mx-auto w-[90%] max-w-[360px] flex flex-col gap-3">
                     {/* 상단: 이름 + 프로필 */}
                     <div
                       className="flex items-center justify-between"
-                      style={{ minHeight: "180px" }}
+                      style={{ minHeight: "140px" }}
                     >
                       <div className="flex-1">
                         <h3 className="text-xl font-extrabold text-[#0F172A]">
@@ -232,38 +256,38 @@ function DoctorSelectPage() {
                       <table className="w-full border-collapse text-center">
                         <thead>
                           <tr>
-                            <th className="text-xs font-bold text-[#64748B] py-1.5 border-b border-[#EEF2F6]">
+                            <th className="text-xs font-bold text-[#64748B] py-1 border-b border-[#EEF2F6]">
                               시간
                             </th>
-                            <th className="text-xs font-bold text-[#64748B] py-1.5 border-b border-[#EEF2F6]">
+                            <th className="text-xs font-bold text-[#64748B] py-1 border-b border-[#EEF2F6]">
                               월
                             </th>
-                            <th className="text-xs font-bold text-[#64748B] py-1.5 border-b border-[#EEF2F6]">
+                            <th className="text-xs font-bold text-[#64748B] py-1 border-b border-[#EEF2F6]">
                               화
                             </th>
-                            <th className="text-xs font-bold text-[#64748B] py-1.5 border-b border-[#EEF2F6]">
+                            <th className="text-xs font-bold text-[#64748B] py-1 border-b border-[#EEF2F6]">
                               수
                             </th>
-                            <th className="text-xs font-bold text-[#64748B] py-1.5 border-b border-[#EEF2F6]">
+                            <th className="text-xs font-bold text-[#64748B] py-1 border-b border-[#EEF2F6]">
                               목
                             </th>
-                            <th className="text-xs font-bold text-[#64748B] py-1.5 border-b border-[#EEF2F6]">
+                            <th className="text-xs font-bold text-[#64748B] py-1 border-b border-[#EEF2F6]">
                               금
                             </th>
-                            <th className="text-xs font-bold text-[#64748B] py-1.5 border-b border-[#EEF2F6]">
+                            <th className="text-xs font-bold text-[#64748B] py-1 border-b border-[#EEF2F6]">
                               토
                             </th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr>
-                            <td className="py-2.5 font-bold text-[#0F172A] text-sm border-b border-[#EEF2F6]">
+                            <td className="py-2 font-bold text-[#0F172A] text-sm border-b border-[#EEF2F6]">
                               오전
                             </td>
                             {doctor.schedules.map((schedule) => (
                               <td
                                 key={`am-${schedule.dayOfWeek}`}
-                                className="py-2.5 border-b border-[#EEF2F6]"
+                                className="py-2 border-b border-[#EEF2F6]"
                               >
                                 <span
                                   className={
@@ -278,13 +302,13 @@ function DoctorSelectPage() {
                             ))}
                           </tr>
                           <tr>
-                            <td className="py-2.5 font-bold text-[#0F172A] text-sm">
+                            <td className="py-2 font-bold text-[#0F172A] text-sm">
                               오후
                             </td>
                             {doctor.schedules.map((schedule) => (
                               <td
                                 key={`pm-${schedule.dayOfWeek}`}
-                                className="py-2.5"
+                                className="py-2"
                               >
                                 <span
                                   className={
@@ -309,7 +333,7 @@ function DoctorSelectPage() {
         </div>
 
         {/* 하단 고정 버튼 */}
-        <div className="fixed bottom-[76px] left-1/2 -translate-x-1/2 w-full max-w-[393px] bg-white p-4 z-40 border-t border-gray-100">
+        <div className="fixed bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-[393px] bg-white p-4 z-40 border-t border-gray-100">
           <button
             onClick={handleNext}
             className="w-full rounded-xl bg-[#2563EB] text-white py-3.5 text-base font-bold shadow-sm active:scale-[0.99] transition"
