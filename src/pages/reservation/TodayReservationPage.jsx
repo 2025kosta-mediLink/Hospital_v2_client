@@ -46,7 +46,6 @@ function TodayReservationPage() {
   };
 
   const headerProps = {
-    title: "오늘 예약 내역",
     onBack: () => navigate(-1),
   };
 
@@ -91,7 +90,12 @@ function TodayReservationPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="text-lg font-bold text-slate-900 mb-1">
-                      {reservation.reservationTime}
+                      {reservation.reservationTime.includes("T")
+                        ? reservation.reservationTime
+                            .split("T")[1]
+                            .substring(0, 5)
+                        : reservation.reservationTime.split(" ")[1] ||
+                          reservation.reservationTime}
                     </div>
                     <div className="text-sm text-slate-600 space-y-0.5">
                       <div>진료과: {reservation.departmentName}</div>

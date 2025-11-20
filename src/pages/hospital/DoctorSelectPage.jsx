@@ -15,7 +15,9 @@ function DoctorSelectPage() {
   const [currentDoctorIndex, setCurrentDoctorIndex] = useState(0);
   const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [noticeHeight, setNoticeHeight] = useState(96); // 공지사항 높이 상태 추가
   const tabsRef = useRef(null);
+  const noticeRef = useRef(null); // 공지사항 ref 추가
 
   // 의사 목록 조회
   useEffect(() => {
@@ -122,6 +124,14 @@ function DoctorSelectPage() {
     onBack: () => navigate(-1),
   };
 
+  // 공지사항 높이 측정
+  useEffect(() => {
+    if (noticeRef.current) {
+      const height = noticeRef.current.offsetHeight;
+      setNoticeHeight(height);
+    }
+  }, [currentNoticeIndex, allNotices]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-100 flex justify-center">
@@ -141,21 +151,24 @@ function DoctorSelectPage() {
         </div>
 
         {/* 공지사항 영역 - 고정 */}
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 w-full max-w-[393px] px-4 pt-4 pb-2 z-40 bg-white">
-          <div className="bg-[#E6F0FA] rounded-2xl p-4 text-center">
+        <div
+          ref={noticeRef}
+          className="fixed top-14 left-1/2 -translate-x-1/2 w-full max-w-[393px] px-4 pt-4 pb-2 z-40 bg-white"
+        >
+          <div className="bg-[#E6F0FA] rounded-2xl p-4 text-center flex items-center justify-center">
             {allNotices.length > 0 ? (
-              <div className="flex flex-col items-center gap-1">
+              <div className="flex flex-col items-center gap-1 w-full">
                 <p className="text-sm text-slate-900">
                   <span className="font-bold">
                     {allNotices[currentNoticeIndex].doctorName} 교수
                   </span>
                 </p>
-                <p className="text-sm text-slate-700">
+                <p className="text-sm text-slate-700 break-words whitespace-normal leading-relaxed px-2">
                   📢 {allNotices[currentNoticeIndex].content}
                 </p>
               </div>
             ) : (
-              <p className="text-sm text-slate-700">
+              <p className="text-sm text-slate-700 py-2">
                 <span className="text-xl mr-2">📢</span>
                 공지사항이 없습니다.
               </p>
@@ -164,7 +177,10 @@ function DoctorSelectPage() {
         </div>
 
         {/* 의사 이름 칩 - 고정 */}
-        <div className="fixed top-[130px] left-1/2 -translate-x-1/2 w-full max-w-[393px] h-16 z-40 bg-white">
+        <div
+          className="fixed left-1/2 -translate-x-1/2 w-full max-w-[393px] h-16 z-40 bg-white"
+          style={{ top: `${56 + noticeHeight}px` }}
+        >
           <div className="relative py-3">
             <div
               ref={tabsRef}
@@ -193,8 +209,11 @@ function DoctorSelectPage() {
 
         {/* 의사 카드 캐러셀 영역 - 고정 */}
         <div
-          className="fixed top-[194px] left-1/2 -translate-x-1/2 w-full max-w-[393px] px-4 bg-[#F8FAFC] z-30"
-          style={{ height: "calc(100vh - 194px - 76px - 72px)" }}
+          className="fixed left-1/2 -translate-x-1/2 w-full max-w-[393px] px-4 bg-[#F8FAFC] z-30"
+          style={{
+            top: `${56 + noticeHeight + 64}px`,
+            height: `calc(100vh - ${56 + noticeHeight + 64}px - 76px - 72px)`,
+          }}
         >
           <div className="relative h-full overflow-hidden pt-4 pb-4">
             {doctors.map((doctor, index) => {
