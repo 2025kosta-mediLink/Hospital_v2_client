@@ -21,7 +21,7 @@ export default function HistoryCard({
     CANCELLED: { bg: "bg-[#FDECEC]", text: "text-[#B42318]", label: "취소" },
 
     // 접수 상태
-    WAITING: { bg: "bg-yellow-50", text: "text-yellow-700", label: "대기중" },
+    WAITING: { bg: "bg-yellow-50", text: "text-yellow-700", label: "대기" },
     IN_SERVICE: { bg: "bg-blue-50", text: "text-blue-600", label: "진료중" },
   };
 
