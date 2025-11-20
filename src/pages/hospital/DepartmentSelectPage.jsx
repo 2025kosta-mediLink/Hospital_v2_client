@@ -86,6 +86,33 @@ function DepartmentSelectPage() {
     return name ? name.charAt(0) : "";
   };
 
+  // 진료과별 아이콘 경로 매핑 함수
+  const getDepartmentIcon = (departmentName) => {
+    const iconMap = {
+      '내과': '/images/class icons/medicine.png',
+      '정형외과': '/images/class icons/orthopedics.png',
+      '피부과': '/images/class icons/dermatology.png',
+      '이비인후과': '/images/class icons/ENT.png',
+      '안과': '/images/class icons/ophthalmology.png',
+      '치과': '/images/class icons/dentistry.png',
+      '소아청소년과': '/images/class icons/pediatrics.png',
+      '신경외과': '/images/class icons/neurosurgery.png',
+      '산부인과': '/images/class icons/obstetrics and gynecology.png',
+      '비뇨기과': '/images/class icons/urology.png',
+      '신경과': '/images/class icons/neurology.png',
+      '정신건강의학과': '/images/class icons/psychiatry.png',
+      '재활의학과': '/images/class icons/Rehabilitation Medicine.png',
+      '흉부외과': '/images/class icons/Thoracic Surgery.png',
+      '응급의학과': '/images/class icons/Emergency Medicine.png',
+      '마취통증의학과': '/images/class icons/Department of Anesthesiology.png',
+      '영상의학과': '/images/class icons/Radiology.png',
+      '진단검사의학과': '/images/class icons/Clinical Pathology.png',
+      '가정의학과': '/images/class icons/Department of Family Medicine.png',
+      '소화기내과': '/images/class icons/Gastroenterology.png',
+    };
+    return iconMap[departmentName] || null; // 매핑되지 않은 경우 null 반환
+  };
+
   const headerProps = {
     // title: "진료과 선택",
     showBack: true,
@@ -152,11 +179,13 @@ function DepartmentSelectPage() {
                         : "border-slate-100"
                     }`}
                   >
-                    {/* 원형 배경 + 첫 글자 */}
+                    {/* 원형 배경 + 아이콘 */}
                     <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                      <span className="text-xl font-bold text-blue-600">
-                        {getFirstChar(dept.name)}
-                      </span>
+                      <img
+                          src={getDepartmentIcon(dept.name)}
+                          alt={dept.name}
+                          className="w-6 h-6 object-contain"
+                      />
                     </div>
                     {/* 진료과명 */}
                     <span className="text-[13px] font-bold text-slate-900">
