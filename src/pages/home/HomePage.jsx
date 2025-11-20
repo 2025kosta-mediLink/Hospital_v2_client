@@ -237,96 +237,87 @@ function HomeContent() {
                   </button>
                 </div>
 
-                {loading ? (
-                  <p className="text-center text-[13px] font-medium text-slate-500 py-4">
-                    로딩 중...
-                  </p>
-                ) : hasAppointment ? (
-                  <div
-                    ref={scrollContainerRef}
-                    className="overflow-y-auto snap-y snap-mandatory scrollbar-hide relative rounded-2xl"
-                    style={{
-                      height: "140px",
-                      scrollSnapType: "y mandatory",
-                      WebkitOverflowScrolling: "touch",
-                      paddingBottom: "4px",
-                      paddingLeft: "4px",
-                      paddingRight: "4px",
-                      background:
-                        "linear-gradient(135deg, rgba(240, 249, 255, 0.6) 0%, rgba(224, 242, 254, 0.6) 100%)",
-                      backdropFilter: "blur(12px) saturate(180%)",
-                      WebkitBackdropFilter: "blur(12px) saturate(180%)",
-                    }}
-                  >
-                    {todayReservations.map((reservation, index) => {
-                      const dateTime = formatReservationDateTime(
-                        reservation.reservationTime
-                      );
-                      return (
-                        <div
-                          key={reservation.reservationId}
-                          className="snap-start snap-always flex items-center justify-center"
+              {loading ? (
+                <p className="text-center text-[13px] font-medium text-slate-500 py-4">
+                  로딩 중...
+                </p>
+              ) : hasAppointment ? (
+                <div
+                  ref={scrollContainerRef}
+                  className="overflow-y-auto snap-y snap-mandatory scrollbar-hide relative rounded-2xl"
+                  style={{
+                    height: '140px',
+                    scrollSnapType: 'y mandatory',
+                    WebkitOverflowScrolling: 'touch',
+                    paddingBottom: '4px',
+                    paddingLeft: '4px',
+                    paddingRight: '4px',
+                    background: 'linear-gradient(135deg, rgba(240, 249, 255, 0.2) 0%, rgba(224, 242, 254, 0.2) 100%)',
+                    backdropFilter: 'blur(12px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+                  }}
+                >
+                  {todayReservations.map((reservation, index) => {
+                    console.log('Reservation data:', reservation); // 디버깅용
+                    const dateTime = formatReservationDateTime(reservation.reservationTime);
+                    console.log('Formatted dateTime:', dateTime); // 디버깅용
+                    return (
+                      <div
+                        key={reservation.reservationId}
+                        className="snap-start snap-always flex items-center justify-center"
+                        style={{ 
+                          height: '140px',
+                          flexShrink: 0,
+                          marginBottom: index < todayReservations.length - 1 ? '12px' : '0',
+                        }}
+                      >
+                        <button
+                          onClick={handleReservationClick}
+                          className="w-full text-left p-4 hover:opacity-95 rounded-2xl transition-all cursor-pointer relative overflow-hidden group"
                           style={{
-                            height: "140px",
-                            flexShrink: 0,
-                            marginBottom:
-                              index < todayReservations.length - 1
-                                ? "12px"
-                                : "0",
+                            background: 'rgba(255, 255, 255, 0.5)',
+                            backdropFilter: 'blur(30px) saturate(180%)',
+                            WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+                            height: '128px',
+                            border: '0.5px solid rgba(255, 255, 255, 0.15)',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), inset 0 0.5px 0 rgba(255, 255, 255, 0.3)',
                           }}
                         >
-                          <button
-                            onClick={handleReservationClick}
-                            className="w-full text-left p-4 hover:opacity-90 rounded-2xl transition-all cursor-pointer relative overflow-hidden group"
-                            style={{
-                              background: "rgba(255, 255, 255, 0.7)",
-                              backdropFilter: "blur(20px) saturate(180%)",
-                              WebkitBackdropFilter: "blur(20px) saturate(180%)",
-                              height: "128px",
-                              border: "1px solid rgba(255, 255, 255, 0.3)",
-                              boxShadow:
-                                "0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6)",
-                            }}
-                          >
-                            {/* 진료과 */}
-                            <div className="mb-3">
-                              <h3 className="text-[16px] font-bold text-chagolBlue">
-                                {reservation.departmentName}
-                              </h3>
-                            </div>
-
-                            {/* 일정 */}
-                            <div className="mb-2">
-                              <span className="text-[13px] text-chagolBlue mr-2">
-                                일정 :
-                              </span>
-                              <span className="text-[13px] font-medium text-chagolBlue">
-                                {dateTime.date} / {dateTime.time}
-                              </span>
-                            </div>
-
-                            {/* 담당의 */}
-                            <div>
-                              <span className="text-[13px] text-chagolBlu mr-2">
-                                의료진 :
-                              </span>
-                              <span className="text-[13px] font-medium text-chagolBlu">
-                                {reservation.doctorName}
-                              </span>
-                            </div>
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-center text-[13px] font-medium text-slate-500 py-4">
-                    오늘 예약된 일정이 없습니다.
-                  </p>
-                )}
-              </div>
-            </section>
-          )}
+                          {/* 진료과 */}
+                          <div className="mb-3">
+                            <h3 className="text-[16px] font-bold text-chagolBlue">
+                              {reservation.departmentName}
+                            </h3>
+                          </div>
+                          
+                          {/* 일정 */}
+                          <div className="mb-2">
+                            <span className="text-[13px] text-chagolBlue mr-2">일정 :</span>
+                            <span className="text-[13px] font-medium text-chagolBlue">
+                              {dateTime.date} / {dateTime.time}
+                            </span>
+                          </div>
+                          
+                          {/* 담당의 */}
+                          <div>
+                            <span className="text-[13px] text-chagolBlu mr-2">의료진 :</span>
+                            <span className="text-[13px] font-medium text-chagolBlu">
+                              {reservation.doctorName}
+                            </span>
+                          </div>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-center text-[13px] font-medium text-slate-500 py-4">
+                  오늘 예약된 일정이 없습니다.
+                </p>
+              )}
+            </div>
+          </section>
+        )}
 
           {/* 퀵 액션 */}
           <section className="grid grid-cols-3 gap-3">
