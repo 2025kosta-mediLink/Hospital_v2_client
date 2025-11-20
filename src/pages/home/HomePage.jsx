@@ -228,7 +228,7 @@ function HomeContent() {
                     paddingBottom: '4px',
                     paddingLeft: '4px',
                     paddingRight: '4px',
-                    background: 'linear-gradient(135deg, rgba(240, 249, 255, 0.6) 0%, rgba(224, 242, 254, 0.6) 100%)',
+                    background: 'linear-gradient(135deg, rgba(240, 249, 255, 0.2) 0%, rgba(224, 242, 254, 0.2) 100%)',
                     backdropFilter: 'blur(12px) saturate(180%)',
                     WebkitBackdropFilter: 'blur(12px) saturate(180%)',
                   }}
@@ -249,14 +249,14 @@ function HomeContent() {
                       >
                         <button
                           onClick={handleReservationClick}
-                          className="w-full text-left p-4 hover:opacity-90 rounded-2xl transition-all cursor-pointer relative overflow-hidden group"
+                          className="w-full text-left p-4 hover:opacity-95 rounded-2xl transition-all cursor-pointer relative overflow-hidden group"
                           style={{
-                            background: 'rgba(255, 255, 255, 0.7)',
-                            backdropFilter: 'blur(20px) saturate(180%)',
-                            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                            background: 'rgba(255, 255, 255, 0.5)',
+                            backdropFilter: 'blur(30px) saturate(180%)',
+                            WebkitBackdropFilter: 'blur(30px) saturate(180%)',
                             height: '128px',
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
-                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+                            border: '0.5px solid rgba(255, 255, 255, 0.15)',
+                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), inset 0 0.5px 0 rgba(255, 255, 255, 0.3)',
                           }}
                         >
                           {/* 진료과 */}
