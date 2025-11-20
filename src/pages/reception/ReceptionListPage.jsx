@@ -11,6 +11,7 @@ import FilterTabs from "../../components/common/HistoryList/FilterTabs";
 import HistoryList from "../../components/common/HistoryList";
 import ReceptionDetailModal from "../../components/reception/ReceptionDetailModal";
 import CancelConfirmModal from "../../components/common/CancelConfirmModal";
+import AlertModal from "../../components/common/AlertModal";
 import { shareToKakao } from "../../utils/kakaoSdk";
 import {
   parseDateTime,
@@ -32,6 +33,14 @@ export default function ReceptionListPage() {
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+
+  // 알림 모달 상태
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
 
   // 데이터 변환 함수
   const transformReceptionData = (items) => {
@@ -90,7 +99,12 @@ export default function ReceptionListPage() {
       }
     } catch (error) {
       console.error("접수 목록 로드 에러:", error);
-      alert(error.message || "목록을 불러오는데 실패했습니다.");
+      setAlertModal({
+        isOpen: true,
+        title: "오류",
+        message: error.message || "목록을 불러오는데 실패했습니다.",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -126,14 +140,29 @@ export default function ReceptionListPage() {
       );
 
       if (result.isSuccess) {
-        alert("접수가 취소되었습니다.");
+        setAlertModal({
+          isOpen: true,
+          title: "취소 완료",
+          message: "접수가 취소되었습니다.",
+          type: "success",
+        });
         await loadData(selectedMonth, selectedStatus);
       } else {
-        alert(result.message || "접수 취소에 실패했습니다.");
+        setAlertModal({
+          isOpen: true,
+          title: "취소 실패",
+          message: result.message || "접수 취소에 실패했습니다.",
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("접수 취소 실패:", error);
-      alert(error.message || "접수 취소에 실패했습니다.");
+      setAlertModal({
+        isOpen: true,
+        title: "오류",
+        message: error.message || "접수 취소에 실패했습니다.",
+        type: "error",
+      });
     } finally {
       setIsDeleting(false);
       setSelectedItem(null);
@@ -168,11 +197,21 @@ export default function ReceptionListPage() {
         setSelectedDetail(result.data);
         setIsModalOpen(true);
       } else {
-        alert("상세 정보를 불러올 수 없습니다.");
+        setAlertModal({
+          isOpen: true,
+          title: "오류",
+          message: "상세 정보를 불러올 수 없습니다.",
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("접수 상세 조회 실패:", error);
-      alert("상세 정보를 불러오는데 실패했습니다.");
+      setAlertModal({
+        isOpen: true,
+        title: "오류",
+        message: "상세 정보를 불러오는데 실패했습니다.",
+        type: "error",
+      });
     }
   };
 
@@ -235,6 +274,14 @@ export default function ReceptionListPage() {
         onConfirm={handleConfirmCancel}
         type="reception"
         data={selectedItem}
+      />
+
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
       />
     </>
   );

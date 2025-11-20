@@ -22,7 +22,7 @@ export default function AlertModal({
     info: {
       icon: (
         <svg
-          className="w-8 h-8 text-blue-600"
+          className="w-6 h-6 text-blue-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -35,16 +35,15 @@ export default function AlertModal({
           />
         </svg>
       ),
-      gradient: "from-blue-500 to-blue-600",
-      bgColor: "bg-blue-50",
-      textColor: "text-blue-900",
-      buttonColor:
-        "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
+      iconBg: "bg-blue-100",
+      messageBg: "bg-blue-50",
+      messageText: "text-blue-800",
+      buttonColor: "bg-blue-600 hover:bg-blue-700",
     },
     success: {
       icon: (
         <svg
-          className="w-8 h-8 text-green-600"
+          className="w-6 h-6 text-green-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -57,16 +56,15 @@ export default function AlertModal({
           />
         </svg>
       ),
-      gradient: "from-green-500 to-green-600",
-      bgColor: "bg-green-50",
-      textColor: "text-green-900",
-      buttonColor:
-        "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700",
+      iconBg: "bg-green-100",
+      messageBg: "bg-green-50",
+      messageText: "text-green-800",
+      buttonColor: "bg-green-600 hover:bg-green-700",
     },
     warning: {
       icon: (
         <svg
-          className="w-8 h-8 text-yellow-600"
+          className="w-6 h-6 text-yellow-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -79,16 +77,15 @@ export default function AlertModal({
           />
         </svg>
       ),
-      gradient: "from-yellow-500 to-yellow-600",
-      bgColor: "bg-yellow-50",
-      textColor: "text-yellow-900",
-      buttonColor:
-        "bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700",
+      iconBg: "bg-yellow-100",
+      messageBg: "bg-yellow-50",
+      messageText: "text-yellow-800",
+      buttonColor: "bg-yellow-600 hover:bg-yellow-700",
     },
     error: {
       icon: (
         <svg
-          className="w-8 h-8 text-red-600"
+          className="w-6 h-6 text-red-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -101,11 +98,10 @@ export default function AlertModal({
           />
         </svg>
       ),
-      gradient: "from-red-500 to-red-600",
-      bgColor: "bg-red-50",
-      textColor: "text-red-900",
-      buttonColor:
-        "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700",
+      iconBg: "bg-red-100",
+      messageBg: "bg-red-50",
+      messageText: "text-red-800",
+      buttonColor: "bg-red-500 hover:bg-red-600",
     },
   };
 
@@ -113,47 +109,59 @@ export default function AlertModal({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm px-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-600/20 px-4"
       style={{ margin: 0, left: 0, right: 0 }}
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl w-full max-w-[340px] overflow-hidden flex flex-col shadow-2xl animate-fade-in"
+        className="bg-white rounded-2xl w-full max-w-[340px] overflow-hidden flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 내용 */}
-        <div className="p-6">
-          {/* 아이콘 */}
-          <div className="flex justify-center mb-4">
-            <div
-              className={`w-20 h-20 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center shadow-lg`}
+        {/* 헤더 */}
+        {title && (
+          <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0">
+            <h2 className="text-base font-bold text-gray-900">{title}</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
             >
-              <div className="w-18 h-18 rounded-full bg-white flex items-center justify-center">
-                {config.icon}
-              </div>
-            </div>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
+        )}
 
-          {/* 제목 */}
-          {title && (
-            <h2 className="text-xl font-bold text-gray-900 text-center mb-3">
-              {title}
-            </h2>
-          )}
-
-          {/* 메시지 */}
-          <div className="mb-5">
-            <p className="text-[15px] text-gray-700 text-center leading-relaxed whitespace-pre-wrap">
-              {message}
-            </p>
+        {/* 내용 */}
+        <div className="p-4 space-y-3">
+          {/* 메시지 박스 */}
+          <div
+            className={`${config.messageBg} rounded-xl p-3 flex items-center gap-3`}
+          >
+            <div
+              className={`flex-shrink-0 w-10 h-10 rounded-full ${config.iconBg} flex items-center justify-center`}
+            >
+              {config.icon}
+            </div>
+            <p className={`text-sm ${config.messageText} flex-1`}>{message}</p>
           </div>
         </div>
 
         {/* 하단 버튼 */}
-        <div className="px-6 pb-6">
+        <div className="bg-white border-t border-gray-200 p-3 flex-shrink-0">
           <button
             onClick={onClose}
-            className={`w-full py-3.5 text-white text-[15px] font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-lg active:scale-[0.98] ${config.buttonColor}`}
+            className={`w-full py-2.5 text-white text-sm font-semibold rounded-xl transition-colors ${config.buttonColor}`}
           >
             {confirmText}
           </button>

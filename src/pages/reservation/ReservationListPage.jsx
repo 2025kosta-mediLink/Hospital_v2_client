@@ -5,6 +5,7 @@ import BottomNav from "../../components/layout/BottomNav";
 import FilterTabs from "../../components/common/HistoryList/FilterTabs";
 import HistoryList from "../../components/common/HistoryList";
 import CancelConfirmModal from "../../components/common/CancelConfirmModal";
+import AlertModal from "../../components/common/AlertModal";
 import {
   getReservationList,
   cancelReservation,
@@ -28,6 +29,14 @@ export default function ReservationListPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+
+  // 알림 모달 상태
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
 
   // 데이터 변환 함수
   const transformReservationData = (items) => {
@@ -86,7 +95,12 @@ export default function ReservationListPage() {
       }
     } catch (error) {
       console.error("예약 목록 로드 에러:", error);
-      alert(error.message || "목록을 불러오는데 실패했습니다.");
+      setAlertModal({
+        isOpen: true,
+        title: "오류",
+        message: error.message || "목록을 불러오는데 실패했습니다.",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -119,14 +133,29 @@ export default function ReservationListPage() {
       const result = await cancelReservation(selectedItem.reservationId);
 
       if (result.isSuccess) {
-        alert("예약이 취소되었습니다.");
+        setAlertModal({
+          isOpen: true,
+          title: "취소 완료",
+          message: "예약이 취소되었습니다.",
+          type: "success",
+        });
         await loadData(selectedMonth, selectedStatus);
       } else {
-        alert(result.message || "예약 취소에 실패했습니다.");
+        setAlertModal({
+          isOpen: true,
+          title: "취소 실패",
+          message: result.message || "예약 취소에 실패했습니다.",
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("예약 취소 실패:", error);
-      alert(error.response?.data?.message || "예약 취소에 실패했습니다.");
+      setAlertModal({
+        isOpen: true,
+        title: "오류",
+        message: error.response?.data?.message || "예약 취소에 실패했습니다.",
+        type: "error",
+      });
     } finally {
       setIsDeleting(false);
       setSelectedItem(null);
@@ -201,6 +230,14 @@ export default function ReservationListPage() {
         onConfirm={handleConfirmCancel}
         type="reservation"
         data={selectedItem}
+      />
+
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
       />
     </>
   );

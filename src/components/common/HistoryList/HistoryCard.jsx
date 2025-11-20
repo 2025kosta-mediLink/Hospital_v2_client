@@ -6,7 +6,7 @@ export default function HistoryCard({
   item,
   onCancel,
   onShare,
-  onDetail, // ✅ 추가
+  onDetail,
 }) {
   const isReservation = type === "reservation";
 
@@ -64,11 +64,39 @@ export default function HistoryCard({
       {/* 메타 정보 */}
       <div className="flex flex-col gap-1.5 mb-3">
         <div className="flex items-center gap-2 text-sm text-gray-700">
-          <span>📅</span>
+          <div className="w-5 h-5 rounded flex items-center justify-center bg-purple-100 flex-shrink-0">
+            <svg
+              className="w-3.5 h-3.5 text-purple-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
           <span>{item.dateLabel}</span>
         </div>
         <div className="flex items-center gap-2 text-sm text-gray-700">
-          <span>⏰</span>
+          <div className="w-5 h-5 rounded flex items-center justify-center bg-blue-100 flex-shrink-0">
+            <svg
+              className="w-3.5 h-3.5 text-blue-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
           <span>{item.timeLabel}</span>
         </div>
       </div>
@@ -76,22 +104,35 @@ export default function HistoryCard({
       {/* 액션 버튼 */}
       {showButtons && (
         <div className="flex gap-2">
-          {/* ✅ 접수내역에만 상세보기 버튼 추가 */}
+          {/* 접수 카드에만 상세보기 버튼 */}
           {!isReservation && onDetail && (
             <button
               onClick={() => onDetail(item)}
-              className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex-1 px-3 py-2.5 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5"
             >
-              상세보기
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>상세</span>
             </button>
           )}
 
           {isCancellable() && (
             <button
               onClick={() => onCancel(item)}
-              className="flex-1 px-4 py-2.5 bg-[#ECEFF3] text-gray-900 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex-1 px-4 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors"
             >
-              취소하기
+              취소
             </button>
           )}
 

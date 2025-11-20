@@ -54,8 +54,23 @@ export default function CancelConfirmModal({
         {/* 내용 */}
         <div className="p-4 space-y-3">
           {/* 안내 메시지 */}
-          <div className="bg-red-50 rounded-xl p-3">
-            <p className="text-sm text-red-800 text-center">
+          <div className="bg-red-50 rounded-xl p-3 flex items-center gap-3">
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+              <svg
+                className="w-5 h-5 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <p className="text-sm text-red-800 flex-1">
               {isReservation
                 ? "예약을 취소하시겠습니까?"
                 : "접수를 취소하시겠습니까?"}
@@ -64,9 +79,23 @@ export default function CancelConfirmModal({
 
           {/* 취소 정보 */}
           <div className="bg-gray-50 rounded-xl p-3 space-y-2.5">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🏥</span>
-              <div>
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
                 <div className="text-[10px] text-gray-500 mb-0.5">진료과</div>
                 <div className="text-sm font-semibold text-gray-900">
                   {data.departmentName}
@@ -74,21 +103,47 @@ export default function CancelConfirmModal({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xl">👨‍⚕️</span>
-              <div>
-                <div className="text-[10px] text-gray-500 mb-0.5">
-                  의료진
-                </div>
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="text-[10px] text-gray-500 mb-0.5">의료진</div>
                 <div className="text-sm font-semibold text-gray-900">
                   {data.doctorName} 교수
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xl">📅</span>
-              <div>
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
                 <div className="text-[10px] text-gray-500 mb-0.5">
                   {isReservation ? "예약 일시" : "접수 일시"}
                 </div>
