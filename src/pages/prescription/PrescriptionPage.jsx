@@ -58,7 +58,7 @@ function PrescriptionPage() {
       <div className="container">
         {/* Section Header */}
         <div className="section-header">
-          <div className="section-title">출력 가능한 처방전 목록</div>
+          <div className="section-title">{' '}출력 가능한 처방전 목록</div>
           <div className="divider"></div>
         </div>
 
