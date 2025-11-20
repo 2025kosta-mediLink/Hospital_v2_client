@@ -52,7 +52,7 @@ function BottomNav() {
   const handleTabClick = (tab) => {
     // 마이페이지 클릭 시 예약 리스트로 이동
     if (tab.id === "mypage") {
-      navigate("/reservation/list");
+      navigate("/reception/list");
       return;
     }
 

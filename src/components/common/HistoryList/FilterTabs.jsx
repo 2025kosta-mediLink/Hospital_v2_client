@@ -24,7 +24,7 @@ export default function FilterTabs({
     ],
     reception: [
       { value: "ALL", label: "전체" },
-      { value: "WAITING", label: "대기중" },
+      { value: "WAITING", label: "대기" },
       { value: "IN_SERVICE", label: "진료중" },
       { value: "DONE", label: "진료완료" },
       { value: "CANCELLED", label: "취소" },

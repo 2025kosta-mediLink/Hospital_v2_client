@@ -71,27 +71,15 @@ export const createReceptionFromReservation = async (receptionData) => {
 
 /**
  * 접수 상세 조회
- * GET /api/v2/receptions/:receptionId
- *
- * @param {number} receptionId - 접수 ID
- * @returns {Promise<ApiResponse>}
+ * @param {number} receptionId
  */
 export const getReceptionDetail = async (receptionId) => {
   try {
     const response = await apiClient.get(`/receptions/${receptionId}`);
-    console.log(
-      `[API] getReceptionDetail(${receptionId}) 응답:`,
-      response.data
-    );
     return response.data;
   } catch (error) {
-    console.error(`[API] getReceptionDetail(${receptionId}) 에러:`, error);
-
-    if (error.response?.status === 404) {
-      throw new Error("접수 정보를 찾을 수 없습니다.");
-    }
-
-    throw new Error("접수 정보를 불러오는데 실패했습니다.");
+    console.error("접수 상세 조회 실패:", error);
+    throw error;
   }
 };
 
