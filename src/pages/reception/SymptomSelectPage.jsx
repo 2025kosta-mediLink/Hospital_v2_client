@@ -4,13 +4,25 @@ import Header from "../../components/layout/Header";
 import BottomNav from "../../components/layout/BottomNav";
 import ReceptionConfirmModal from "../../components/reception/ReceptionConfirmModal";
 import { getSymptoms } from "../../api/symptomApi";
-import { createReception, getReceptionDetail } from "../../api/receptionApi";
+import {
+  createReception,
+  createReceptionFromReservation,
+  getReceptionDetail,
+} from "../../api/receptionApi";
 
 export default function SymptomSelectPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // 일반 접수용 props
   const { doctorId, doctorName, departmentName } = location.state || {};
+
+  // 예약 기반 접수용 props
+  const { reservationId, reservationNo, reservationTime, fromPage } =
+    location.state || {};
+
+  // 예약 기반 접수인지 확인
+  const isReservationBased = !!reservationId;
 
   const [symptoms, setSymptoms] = useState([]);
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
@@ -75,6 +87,11 @@ export default function SymptomSelectPage() {
   const handleNext = (e) => {
     e.preventDefault();
 
+    if (selectedSymptoms.length === 0) {
+      alert("증상을 하나 이상 선택해주세요.");
+      return;
+    }
+
     if (noteToDoctor.length > maxLength) {
       alert(`전달사항은 최대 ${maxLength}자까지 입력 가능합니다.`);
       return;
@@ -86,12 +103,34 @@ export default function SymptomSelectPage() {
   // 모달에서 "바로 접수하기" 클릭 → 실제 API 호출
   const handleConfirmReception = async () => {
     try {
-      const createResult = await createReception({
-        doctorId,
-        symptomIds: selectedSymptoms.length > 0 ? selectedSymptoms : undefined,
-        noteToDoctor: noteToDoctor.trim() || undefined,
-        consentNotice: true,
-      });
+      let createResult;
+
+      // 예약 기반 접수 vs 일반 접수
+      if (isReservationBased) {
+        console.log("=== 예약 기반 접수 생성 시작 ===");
+        console.log("reservationId:", reservationId);
+
+        createResult = await createReceptionFromReservation({
+          reservationId,
+          symptomIds:
+            selectedSymptoms.length > 0 ? selectedSymptoms : undefined,
+          noteToDoctor: noteToDoctor.trim() || undefined,
+          consentNotice: true,
+        });
+      } else {
+        console.log("=== 일반 접수 생성 시작 ===");
+        console.log("doctorId:", doctorId);
+
+        createResult = await createReception({
+          doctorId,
+          symptomIds:
+            selectedSymptoms.length > 0 ? selectedSymptoms : undefined,
+          noteToDoctor: noteToDoctor.trim() || undefined,
+          consentNotice: true,
+        });
+      }
+
+      console.log("접수 생성 결과:", createResult);
 
       if (createResult.isSuccess) {
         const receptionId =
@@ -106,6 +145,9 @@ export default function SymptomSelectPage() {
 
           navigate("/reception/complete", {
             state: {
+              receptionId,
+              type: isReservationBased ? "RESERVATION" : "NORMAL",
+              fromPage: isReservationBased ? fromPage : undefined,
               data: {
                 receptionNo:
                   detailResult.data.receptionNo ||
@@ -171,6 +213,33 @@ export default function SymptomSelectPage() {
         {/* 메인 영역 - 스크롤 가능 */}
         <main className="flex-1 overflow-y-auto bg-[#F8FAFC] pt-14 pb-[calc(64px+96px)]">
           <form id="symptomForm" onSubmit={handleNext} className="p-4">
+            {/* 예약 정보 카드 - 예약 기반 접수인 경우에만 표시 */}
+            {isReservationBased && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl shadow-sm p-3.5 mb-3">
+                <h3 className="flex items-center gap-2 mb-2 text-sm font-semibold text-blue-900">
+                  <img
+                    src="/images/icons/calendar_blue.png"
+                    alt="예약 정보"
+                    className="h-5 w-5 object-contain"
+                  />
+                  예약 정보
+                </h3>
+                <div className="text-sm text-blue-700 space-y-1">
+                  <div>예약 번호: {reservationNo}</div>
+                  <div>진료과: {departmentName}</div>
+                  <div>의료진: {doctorName}</div>
+                  {reservationTime && (
+                    <div>
+                      예약 시간:{" "}
+                      {reservationTime.includes("T")
+                        ? reservationTime.split("T")[1].substring(0, 5)
+                        : reservationTime}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* 카드 1: 증상 선택 */}
             <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3.5 mb-3">
               <h3 className="flex items-center gap-2 mb-2.5 text-sm font-semibold text-gray-900">
@@ -252,7 +321,9 @@ export default function SymptomSelectPage() {
             id="nextBtn"
             type="button"
             onClick={handleNext}
-            disabled={noteToDoctor.length > maxLength}
+            disabled={
+              selectedSymptoms.length === 0 || noteToDoctor.length > maxLength
+            }
             className="flex items-center justify-center w-full h-12 px-0 bg-[#2563EB] text-white text-base font-bold rounded-xl hover:brightness-[0.98] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             다음

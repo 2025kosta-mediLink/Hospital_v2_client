@@ -18,7 +18,6 @@ import PharmacySearchPage from "./pages/pharmacy/PharmacySearchPage";
 import DispensingStatusPage from "./pages/dispensing/DispensingStatusPage";
 import SymptomSelectPage from "./pages/reception/SymptomSelectPage";
 import ReceptionCompletePage from "./pages/reception/ReceptionCompletePage";
-import ReservationSymptomPage from "./pages/reception/ReservationSymptomPage";
 
 function App() {
   return (
@@ -84,15 +83,6 @@ function App() {
         element={
           <ProtectedRoute>
             <SymptomSelectPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="/reservation/symptom" element={<ReservationSymptomPage />} />
-      <Route
-        path="/reservation/complete"
-        element={
-          <ProtectedRoute>
-            <ReservationCompletePage />
           </ProtectedRoute>
         }
       />
