@@ -276,7 +276,7 @@ function HomeContent() {
                           
                           {/* 담당의 */}
                           <div>
-                            <span className="text-[13px] text-chagolBlu mr-2">담당의 :</span>
+                            <span className="text-[13px] text-chagolBlu mr-2">의료진 :</span>
                             <span className="text-[13px] font-medium text-chagolBlu">
                               {reservation.doctorName}
                             </span>
