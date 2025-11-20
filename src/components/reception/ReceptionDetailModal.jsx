@@ -5,7 +5,7 @@ export default function ReceptionDetailModal({ isOpen, onClose, detail }) {
   if (!isOpen || !detail) return null;
 
   const statusConfig = {
-    WAITING: { bg: "bg-yellow-50", text: "text-yellow-700", label: "대기중" },
+    WAITING: { bg: "bg-yellow-50", text: "text-yellow-700", label: "대기" },
     IN_SERVICE: { bg: "bg-blue-50", text: "text-blue-600", label: "진료중" },
     DONE: { bg: "bg-[#E7F0FF]", text: "text-[#1743B3]", label: "진료완료" },
     CANCELLED: { bg: "bg-[#FDECEC]", text: "text-[#B42318]", label: "취소" },
@@ -74,7 +74,7 @@ export default function ReceptionDetailModal({ isOpen, onClose, detail }) {
               <span className="text-xl">👨‍⚕️</span>
               <div>
                 <div className="text-[10px] text-gray-500 mb-0.5">
-                  담당 의사
+                  의료진
                 </div>
                 <div className="text-sm font-semibold text-gray-900">
                   {detail.doctorName} 교수

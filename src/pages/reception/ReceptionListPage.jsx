@@ -3,14 +3,22 @@ import { useNavigate } from "react-router-dom";
 import {
   getReceptionList,
   cancelReception,
-  getReceptionDetail, // ✅ 경로 수정
-} from "../../api/receptionApi"; // ✅ reception → receptionApi
+  getReceptionDetail,
+} from "../../api/receptionApi";
 import Header from "../../components/layout/Header";
 import BottomNav from "../../components/layout/BottomNav";
 import FilterTabs from "../../components/common/HistoryList/FilterTabs";
 import HistoryList from "../../components/common/HistoryList";
-import ReceptionDetailModal from "../../components/reception/ReceptionDetailModal"; // ✅ 추가
+import ReceptionDetailModal from "../../components/reception/ReceptionDetailModal";
+import CancelConfirmModal from "../../components/common/CancelConfirmModal";
 import { shareToKakao } from "../../utils/kakaoSdk";
+import {
+  parseDateTime,
+  formatDateLabel,
+  formatTimeLabel,
+  generateMonthOptions,
+  groupByMonth,
+} from "../../utils/dateUtils";
 
 export default function ReceptionListPage() {
   const navigate = useNavigate();
@@ -20,35 +28,10 @@ export default function ReceptionListPage() {
   const [groupedData, setGroupedData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false); // ✅ 추가
-  const [selectedDetail, setSelectedDetail] = useState(null); // ✅ 추가
-
-  // 날짜/시간 파싱 함수
-  const parseDateTime = (createdAt) => {
-    if (!createdAt) return { date: "", time: "", yearMonth: "" };
-
-    // "2025-11-18T20:32:27" → { date: "2025-11-18", time: "20:32", yearMonth: "2025-11" }
-    const [datePart, timePart] = createdAt.split("T");
-    const yearMonth = datePart.substring(0, 7); // "2025-11"
-    const time = timePart.substring(0, 5); // "20:32"
-
-    return {
-      date: datePart,
-      time: time,
-      yearMonth: yearMonth,
-    };
-  };
-
-  // 날짜 라벨 생성 (2025년 11월 18일 (월))
-  const formatDateLabel = (dateStr) => {
-    if (!dateStr) return "";
-    const date = new Date(dateStr);
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const weekday = ["일", "월", "화", "수", "목", "금", "토"][date.getDay()];
-    return `${year}년 ${month}월 ${day}일 (${weekday})`;
-  };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDetail, setSelectedDetail] = useState(null);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   // 데이터 변환 함수
   const transformReceptionData = (items) => {
@@ -60,7 +43,7 @@ export default function ReceptionListPage() {
         receptionDate: date,
         receptionTime: time,
         dateLabel: formatDateLabel(date),
-        timeLabel: time,
+        timeLabel: formatTimeLabel(time),
         yearMonth: yearMonth,
       };
     });
@@ -72,14 +55,12 @@ export default function ReceptionListPage() {
     try {
       const params = {};
 
-      // 월 필터 (YYYY-MM → year, month)
       if (month && month !== "ALL") {
         const [year, monthNum] = month.split("-");
         params.year = parseInt(year, 10);
         params.month = parseInt(monthNum, 10);
       }
 
-      // 상태 필터
       if (status && status !== "ALL") {
         params.status = status;
       }
@@ -88,53 +69,22 @@ export default function ReceptionListPage() {
 
       if (result.isSuccess) {
         const rawItems = result.data || [];
-
-        // 1️⃣ 데이터 변환 (createdAt → receptionDate, receptionTime, yearMonth)
         const transformedItems = transformReceptionData(rawItems);
 
-        // 2️⃣ 월 옵션 생성 (첫 로드 시)
+        // 월 옵션 생성
         if (monthOptions.length === 0 && transformedItems.length > 0) {
-          const months = new Set();
-          transformedItems.forEach((item) => {
-            if (item.yearMonth) {
-              months.add(item.yearMonth);
-            }
-          });
-
-          const opts = Array.from(months)
-            .sort()
-            .reverse()
-            .map((ym) => {
-              const [y, m] = ym.split("-");
-              return {
-                value: ym,
-                label: `${y}년 ${parseInt(m, 10)}월`,
-              };
-            });
-
-          setMonthOptions(opts);
+          const months = new Set(
+            transformedItems.map((item) => item.yearMonth).filter(Boolean)
+          );
+          setMonthOptions(generateMonthOptions(Array.from(months)));
         }
 
-        // 3️⃣ 월별 그룹핑
-        const grouped = {};
-        transformedItems.forEach((item) => {
-          const ym = item.yearMonth || "기타";
-          if (!grouped[ym]) grouped[ym] = [];
-          grouped[ym].push(item);
-        });
-
-        // 4️⃣ 각 그룹 내에서 날짜 내림차순 정렬
-        Object.keys(grouped).forEach((key) => {
-          grouped[key].sort((a, b) => {
-            return (
-              new Date(b.receptionDate + "T" + b.receptionTime) -
-              new Date(a.receptionDate + "T" + a.receptionTime)
-            );
-          });
-        });
-
-        // console.log("✅ 변환된 접수 데이터:", transformedItems);
-        // console.log("✅ 그룹핑된 접수 데이터:", grouped);
+        // 월별 그룹핑 및 정렬
+        const grouped = groupByMonth(
+          transformedItems,
+          "receptionDate",
+          "receptionTime"
+        );
 
         setGroupedData(grouped);
       }
@@ -156,19 +106,27 @@ export default function ReceptionListPage() {
     setSelectedStatus(status || "ALL");
   };
 
-  // 접수 취소
-  const handleCancel = async (item) => {
-    if (!confirm("접수를 취소하시겠습니까?")) {
-      return;
-    }
+  // 접수 취소 모달 열기
+  const handleCancel = (item) => {
+    setSelectedItem(item);
+    setIsCancelModalOpen(true);
+  };
 
+  // 접수 취소 확인
+  const handleConfirmCancel = async () => {
+    if (!selectedItem) return;
+
+    setIsCancelModalOpen(false);
     setIsDeleting(true);
+
     try {
-      const result = await cancelReception(item.receptionId, "사용자 취소");
+      const result = await cancelReception(
+        selectedItem.receptionId,
+        "사용자 취소"
+      );
 
       if (result.isSuccess) {
         alert("접수가 취소되었습니다.");
-        // 목록 새로고침
         await loadData(selectedMonth, selectedStatus);
       } else {
         alert(result.message || "접수 취소에 실패했습니다.");
@@ -178,6 +136,7 @@ export default function ReceptionListPage() {
       alert(error.message || "접수 취소에 실패했습니다.");
     } finally {
       setIsDeleting(false);
+      setSelectedItem(null);
     }
   };
 
@@ -201,7 +160,7 @@ export default function ReceptionListPage() {
     });
   };
 
-  // ✅ 상세보기 핸들러 추가
+  // 상세보기
   const handleDetail = async (item) => {
     try {
       const result = await getReceptionDetail(item.receptionId);
@@ -222,7 +181,6 @@ export default function ReceptionListPage() {
       <div className="flex flex-col h-screen max-w-[393px] mx-auto bg-white">
         <Header showBack={true} />
 
-        {/* 탭 네비게이션 (예약/접수) - 고정 */}
         <nav className="sticky top-0 z-10 grid grid-cols-2 h-12 border-b border-gray-200 bg-white">
           <button
             onClick={() => navigate("/reservation/list")}
@@ -235,7 +193,6 @@ export default function ReceptionListPage() {
           </button>
         </nav>
 
-        {/* 필터 - 고정 */}
         <div className="sticky top-12 z-10 bg-white">
           <FilterTabs
             type="reception"
@@ -246,7 +203,6 @@ export default function ReceptionListPage() {
           />
         </div>
 
-        {/* 리스트 - 스크롤 영역 */}
         <main className="flex-1 overflow-y-auto bg-gray-50">
           {isLoading || isDeleting ? (
             <div className="flex items-center justify-center py-12 text-gray-500">
@@ -261,18 +217,24 @@ export default function ReceptionListPage() {
               onDetail={handleDetail}
             />
           )}
-          {/* 하단 여백 (BottomNav 겹침 방지) */}
           <div className="h-20" />
         </main>
 
         <BottomNav />
       </div>
 
-      {/* ✅ 모달을 컨테이너 밖으로 이동 */}
       <ReceptionDetailModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         detail={selectedDetail}
+      />
+
+      <CancelConfirmModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={handleConfirmCancel}
+        type="reception"
+        data={selectedItem}
       />
     </>
   );
