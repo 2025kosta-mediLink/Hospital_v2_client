@@ -45,7 +45,6 @@ function DispensingStatusContainer({ dispensingId, onComplete, fromNotification,
   useEffect(() => {
     // 알림으로 들어온 경우
     if (fromNotification && completedAt) {
-      console.log('[DispensingStatusContainer] 알림으로 들어옴, 즉시 완료 상태로 설정:', completedAt);
       setDisplayStatus(prev => ({
         ...prev,
         status: 'COMPLETED',
@@ -65,7 +64,6 @@ function DispensingStatusContainer({ dispensingId, onComplete, fromNotification,
         const completedAtMap = JSON.parse(localStorage.getItem('notifiedDispensingCompletedAt') || '{}');
         const savedCompletedAt = completedAtMap[dispensingIdStr] || new Date().toISOString();
         
-        console.log('[DispensingStatusContainer] 이미 알림을 받은 dispensingId, 완료 상태로 설정:', dispensingIdStr, savedCompletedAt);
         setDisplayStatus(prev => ({
           ...prev,
           status: 'COMPLETED',
@@ -93,12 +91,6 @@ function DispensingStatusContainer({ dispensingId, onComplete, fromNotification,
     }
 
     if (statusQuery.data) {
-      console.log('백엔드 조제 정보:', statusQuery.data);
-      console.log('약사 이름:', statusQuery.data.dispenserName);
-      console.log('예상 완료 시간:', statusQuery.data.estimatedCompletionTime);
-      console.log('백엔드 상태:', statusQuery.data.status);
-      console.log('백엔드 completedAt:', statusQuery.data.completedAt);
-      
       // 백엔드에서 실제 상태 확인
       const backendStatus = statusQuery.data.status;
       const backendCompletedAt = statusQuery.data.completedAt;
@@ -136,7 +128,6 @@ function DispensingStatusContainer({ dispensingId, onComplete, fromNotification,
       
       // 현재 dispensingId와 일치하는 경우에만 상태 업데이트
       if (eventDispensingId && String(eventDispensingId) === String(dispensingId)) {
-        console.log('[DispensingStatusContainer] 전역 이벤트 수신, 완료 상태로 업데이트:', { eventDispensingId, eventCompletedAt });
         setDisplayStatus(prev => ({
           ...prev,
           status: 'COMPLETED',
@@ -180,7 +171,6 @@ function DispensingStatusContainer({ dispensingId, onComplete, fromNotification,
         setAutoCompleted(true);
         
         // 전역 알림을 위한 이벤트 발생
-        console.log('[DispensingStatusContainer] 조제 완료! 전역 이벤트 발생:', { dispensingId, completedAt });
         const event = new CustomEvent('dispensingCompleted', {
           detail: {
             dispensingId: String(dispensingId),
@@ -189,8 +179,7 @@ function DispensingStatusContainer({ dispensingId, onComplete, fromNotification,
           bubbles: true,
           cancelable: true
         });
-        const dispatched = window.dispatchEvent(event);
-        console.log('[DispensingStatusContainer] 이벤트 전달 성공:', dispatched);
+        window.dispatchEvent(event);
         
         // 로컬 알림 모달도 표시 (조제상황 페이지에서)
         setIsCompletionModalOpen(true);
