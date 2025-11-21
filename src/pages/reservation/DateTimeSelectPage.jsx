@@ -23,6 +23,7 @@ function DateTimeSelectPage() {
   const [selectedTime, setSelectedTime] = useState(null); // HH:MM
   const [amSlots, setAmSlots] = useState([]);
   const [pmSlots, setPmSlots] = useState([]);
+  const [bookedTimes, setBookedTimes] = useState([]); // 예약된 시간 목록 추가
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
@@ -61,19 +62,24 @@ function DateTimeSelectPage() {
     setSelectedTime(null);
     setAmSlots([]);
     setPmSlots([]);
+    setBookedTimes([]); // 예약된 시간 초기화
     setIsLoading(true);
 
     try {
       const result = await getAvailableTimeSlots(doctorId, dateStr);
 
-      // am, pm이 null일 경우 빈 배열로 처리
+      // API 응답 구조에 따라 수정 필요
       setAmSlots(result.data.am || []);
       setPmSlots(result.data.pm || []);
+
+      // 예약된 시간이 별도로 제공되는 경우
+      setBookedTimes(result.data.booked || []);
     } catch (error) {
       console.error("시간 슬롯 조회 에러:", error);
       alert("예약 가능 시간을 불러오는데 실패했습니다.");
       setAmSlots([]);
       setPmSlots([]);
+      setBookedTimes([]);
     } finally {
       setIsLoading(false);
     }
@@ -207,6 +213,7 @@ function DateTimeSelectPage() {
               <TimeSlotGrid
                 amSlots={amSlots}
                 pmSlots={pmSlots}
+                bookedTimes={bookedTimes}
                 selectedTime={selectedTime}
                 onTimeSelect={handleTimeSelect}
                 isLoading={isLoading}
