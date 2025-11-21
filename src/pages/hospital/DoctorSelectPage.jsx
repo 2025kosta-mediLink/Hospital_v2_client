@@ -17,9 +17,12 @@ function DoctorSelectPage() {
   const [currentDoctorIndex, setCurrentDoctorIndex] = useState(0);
   const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const [noticeHeight, setNoticeHeight] = useState(96);
   const tabsRef = useRef(null);
   const noticeRef = useRef(null);
+  const timeoutRef = useRef(null);
+  const isRequestingRef = useRef(false);
 
   // 모달 상태
   const [alertModal, setAlertModal] = useState({
@@ -97,7 +100,35 @@ function DoctorSelectPage() {
     };
 
     fetchDoctors();
-  }, [departmentId, navigate]);
+  }, [departmentId]);
+
+  // 페이지 진입 시 상태 초기화
+  useEffect(() => {
+    setIsCheckingAvailability(false);
+    setAlertModal({
+      isOpen: false,
+      type: "info",
+      title: "",
+      message: "",
+    });
+
+    // 컴포넌트 언마운트 시 타임아웃 정리
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  // location 변경 시에도 상태 초기화
+  useEffect(() => {
+    setIsCheckingAvailability(false);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, [location.pathname]);
 
   // 공지사항 자동 슬라이드 (5초)
   useEffect(() => {
@@ -131,6 +162,11 @@ function DoctorSelectPage() {
 
   // 다음 버튼 핸들러
   const handleNext = async () => {
+    // 중복 클릭 방지
+    if (isRequestingRef.current || isCheckingAvailability) {
+      return;
+    }
+
     const selectedDoctor = doctors[currentDoctorIndex];
 
     if (from === "reservation") {
@@ -145,13 +181,42 @@ function DoctorSelectPage() {
         },
       });
     } else if (from === "reception") {
-      // 접수: 오늘 진료 가능 여부만 확인
+      // 요청 플래그 설정
+      isRequestingRef.current = true;
+      setIsCheckingAvailability(true);
+
+      // 기존 타임아웃이 있으면 제거
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      // 타임아웃 설정 (10초)
+      timeoutRef.current = setTimeout(() => {
+        isRequestingRef.current = false;
+        setIsCheckingAvailability(false);
+        showAlert(
+          "요청 시간이 초과되었습니다.\n다시 시도해주세요.",
+          "error",
+          "시간 초과"
+        );
+        timeoutRef.current = null;
+      }, 10000);
+
+      // 약간의 지연을 주어 토큰이 완전히 설정되도록 함
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       try {
         const today = new Date().toISOString().split("T")[0];
         const result = await getAvailableTimeSlots(
           selectedDoctor.doctorId,
           today
         );
+
+        // 타임아웃 클리어
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
 
         // 안전하게 slots 추출
         let slots = { am: [], pm: [] };
@@ -170,6 +235,8 @@ function DoctorSelectPage() {
             "warning",
             "진료 불가"
           );
+          isRequestingRef.current = false;
+          setIsCheckingAvailability(false);
           return;
         }
 
@@ -186,9 +253,41 @@ function DoctorSelectPage() {
       } catch (error) {
         console.error("진료 가능 여부 확인 실패:", error);
 
-        if (error.message && error.message.includes("예약 가능 시간")) {
+        // 타임아웃 클리어
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+
+        // 인증 오류 (401, 403)
+        if (error.response?.status === 401 || error.response?.status === 403) {
           showAlert(
-            "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+            "로그인이 만료되었습니다.\n다시 로그인해주세요.",
+            "error",
+            "인증 오류"
+          );
+          setTimeout(() => {
+            localStorage.clear();
+            sessionStorage.clear();
+            navigate("/login", { replace: true });
+          }, 1500);
+          isRequestingRef.current = false;
+          setIsCheckingAvailability(false);
+          return;
+        }
+
+        // 네트워크 오류
+        if (!error.response) {
+          showAlert("네트워크 연결을 확인해주세요.", "error", "연결 오류");
+        } else if (error.response?.status >= 500) {
+          showAlert(
+            "서버에 일시적인 문제가 발생했습니다.\n잠시 후 다시 시도해주세요.",
+            "error",
+            "서버 오류"
+          );
+        } else if (error.message && error.message.includes("예약 가능 시간")) {
+          showAlert(
+            "일시적인 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.",
             "error",
             "오류 발생"
           );
@@ -198,6 +297,15 @@ function DoctorSelectPage() {
             "error",
             "오류 발생"
           );
+        }
+      } finally {
+        // 항상 실행: 로딩 상태 해제
+        isRequestingRef.current = false;
+        setIsCheckingAvailability(false);
+        // 타임아웃 정리
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
         }
       }
     }
@@ -438,9 +546,14 @@ function DoctorSelectPage() {
         <div className="fixed bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-[393px] bg-white p-4 z-40 border-t border-gray-100">
           <button
             onClick={handleNext}
-            className="w-full rounded-xl bg-[#2563EB] text-white py-3.5 text-base font-bold shadow-sm active:scale-[0.99] transition"
+            disabled={isCheckingAvailability}
+            className={`w-full rounded-xl text-white py-3.5 text-base font-bold shadow-sm transition ${
+              isCheckingAvailability
+                ? "bg-slate-400 cursor-not-allowed"
+                : "bg-[#2563EB] active:scale-[0.99]"
+            }`}
           >
-            다음
+            {isCheckingAvailability ? "확인 중..." : "다음"}
           </button>
         </div>
 
