@@ -17,6 +17,43 @@ export default function AlertModal({
 }) {
   if (!isOpen) return null;
 
+  // 로그아웃 아이콘 (왼쪽이 막힌 사각형 프레임, 오른쪽이 열린 형태, 오른쪽으로 나가는 화살표)
+  const logoutIcon = (
+    <svg
+      className="w-8 h-8 text-blue-600"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      viewBox="0 0 24 24"
+    >
+      {/* 사각형 프레임 - 왼쪽이 막힌 형태 (왼쪽, 상단, 하단만 있음) */}
+      {/* 왼쪽 선 (막힘 표시) */}
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 6v12"
+      />
+      {/* 상단 선 */}
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 6h12"
+      />
+      {/* 하단 선 */}
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 18h12"
+      />
+      {/* 화살표 - 프레임 안에서 오른쪽으로 나가는 형태 */}
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M14 12h6m-3-3l3 3-3 3"
+      />
+    </svg>
+  );
+
   // 타입별 아이콘 설정
   const typeConfig = {
     info: {
@@ -38,7 +75,7 @@ export default function AlertModal({
       iconBg: "bg-blue-100",
     },
     success: {
-      icon: (
+      icon: title === "로그아웃" ? logoutIcon : (
         <svg
           className="w-8 h-8 text-blue-600"
           fill="none"
@@ -58,7 +95,7 @@ export default function AlertModal({
     warning: {
       icon: (
         <svg
-          className="w-8 h-8 text-orange-600"
+          className="w-8 h-8 text-blue-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -71,7 +108,7 @@ export default function AlertModal({
           />
         </svg>
       ),
-      iconBg: "bg-orange-100",
+      iconBg: "bg-blue-100",
     },
     error: {
       icon: (
