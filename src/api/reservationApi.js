@@ -47,16 +47,20 @@ export const getAvailableTimeSlots = async (doctorId, date) => {
 export const createReservation = async (reservationData) => {
   try {
     // ✅ appointmentAt → reservationTime으로 변환
+    // "2025-11-22 09:30:00" → "2025-11-22T09:30:00"
     const requestBody = {
       doctorId: reservationData.doctorId,
-      reservationTime: reservationData.appointmentAt.replace(" ", "T"), // 2025-11-20 09:00:00 → 2025-11-20T09:00:00
+      reservationTime: reservationData.appointmentAt.replace(" ", "T"),
     };
 
+    console.log("[API] createReservation 요청:", requestBody); // 디버깅용
+
     const response = await apiClient.post("/reservation", requestBody);
-    // console.log("[API] createReservation 응답:", response.data);
+    console.log("[API] createReservation 응답:", response.data);
     return response.data;
   } catch (error) {
     console.error("[API] createReservation 에러:", error);
+    console.error("[API] 에러 응답:", error.response?.data); // 디버깅용
 
     // 409 Conflict - 이미 예약된 시간
     if (error.response?.status === 409) {
