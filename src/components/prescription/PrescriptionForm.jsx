@@ -31,6 +31,26 @@ const PrescriptionForm = forwardRef(function PrescriptionForm({ prescription, me
     dispensingDays: '1일',
   };
 
+  // 처방의약품 가짜 데이터
+  const medicationData = [
+    { name: '타이레놀정 500mg', once: '1정', daily: '3회', total: '타이레놀정 500mg 15정 (3회/일 × 5일)', usage: '식후 30분' },
+    { name: '게보린정', once: '2정', daily: '3회', total: '게보린정 18정 (3회/일 × 3일)', usage: '식전 30분' },
+    { name: '판콜에이내복액', once: '10ml', daily: '3회', total: '판콜에이내복액 60ml (3회/일 × 2일)', usage: '식후' },
+  ];
+
+  // 주사제 처방내역 가짜 데이터
+  const injectionData = [
+    '인슐린 글라르긴 주사액 100단위/ml',
+    '정맥영양제 TPN 500ml',
+  ];
+
+  // 조제시 참고사항 가짜 데이터
+  const dispensingNotes = [
+    '음식과 함께 복용',
+    '저혈당 주의',
+    '운전 시 주의',
+  ];
+
   // 동적 데이터
   const todayDate = getTodayDate();
   // 회원 정보 (가입 시 입력한 정보)
@@ -115,9 +135,18 @@ const PrescriptionForm = forwardRef(function PrescriptionForm({ prescription, me
             </tr>
           </thead>
           <tbody>
-            {/* 빈 행들 */}
-            {[1, 2, 3, 4, 5].map((idx) => (
+            {/* 처방의약품 데이터 행들 */}
+            {medicationData.map((med, idx) => (
               <tr key={idx}>
+                <td>{med.once}</td>
+                <td>{med.daily}</td>
+                <td>{med.total}</td>
+                <td>{med.usage}</td>
+              </tr>
+            ))}
+            {/* 추가 빈 행들 */}
+            {[1, 2].map((idx) => (
+              <tr key={`empty-${idx}`}>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -134,15 +163,20 @@ const PrescriptionForm = forwardRef(function PrescriptionForm({ prescription, me
           <div className="prescription-injection-title">
             주사제 처방내역 (원내 조제 □, 원외처방 □)
           </div>
-          <div className="prescription-injection-content"></div>
-          <div className="prescription-injection-content"></div>
+          {injectionData.map((injection, idx) => (
+            <div key={idx} className="prescription-injection-content">
+              {injection}
+            </div>
+          ))}
           <div className="prescription-injection-content"></div>
         </div>
         <div className="prescription-injection-right">
           <div className="prescription-injection-title">조제시 참고사항</div>
-          <div className="prescription-injection-content"></div>
-          <div className="prescription-injection-content"></div>
-          <div className="prescription-injection-content"></div>
+          {dispensingNotes.map((note, idx) => (
+            <div key={idx} className="prescription-injection-content">
+              {note}
+            </div>
+          ))}
         </div>
       </div>
 

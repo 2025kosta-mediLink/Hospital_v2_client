@@ -69,8 +69,14 @@ function DispensingStatusPage() {
   // 수령하기 버튼 클릭 후 수령 완료된 경우만 안내 페이지 표시
   // statusQuery가 로딩 중이거나 데이터가 없으면 false로 처리하여 지도 표시
   const isReceived = !statusQuery.isLoading && statusQuery.data?.status === 'RECEIVED_BY_USER';
-  const receivedAt = statusQuery.data?.receivedAt;
-  const pharmacyNameForCompleted = statusQuery.data?.pharmacyName 
+  
+  // receivedAt은 location.state에서 전달받은 값 우선 사용, 없으면 statusQuery에서 가져오기
+  const receivedAt = location.state?.receivedAt 
+    || statusQuery.data?.receivedAt;
+    
+  // pharmacyName도 location.state에서 전달받은 값 우선 사용
+  const pharmacyNameForCompleted = location.state?.pharmacyName
+    || statusQuery.data?.pharmacyName 
     || pharmacyFromState?.name 
     || pharmacyNameFromState;
 

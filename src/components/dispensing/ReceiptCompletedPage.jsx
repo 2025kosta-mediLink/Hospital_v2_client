@@ -4,7 +4,8 @@
  */
 
 function ReceiptCompletedPage({ pharmacyName, receivedAt }) {
-  // 디버깅: receivedAt 값 확인
+  // 디버깅: 전달받은 props 확인
+  console.log('[ReceiptCompletedPage] pharmacyName:', pharmacyName);
   console.log('[ReceiptCompletedPage] receivedAt:', receivedAt, typeof receivedAt);
   
   // 날짜 포맷팅 (예: 2025년 1월 15일)
@@ -32,6 +33,9 @@ function ReceiptCompletedPage({ pharmacyName, receivedAt }) {
     }
   };
 
+  const dateStr = receivedAt ? formatDate(receivedAt) : '';
+  const pharmacyStr = pharmacyName || '약국';
+
   return (
     <div className="receipt-completed-page">
       <div className="receipt-completed-content">
@@ -39,15 +43,15 @@ function ReceiptCompletedPage({ pharmacyName, receivedAt }) {
           <div className="check-circle">✓</div>
         </div>
         <div className="receipt-completed-message">
-          {receivedAt && (
-            <div className="receipt-completed-date">
-              {formatDate(receivedAt)}
+          {dateStr && (
+            <div className="receipt-completed-line">
+              {dateStr}에
             </div>
           )}
-          <div className="receipt-completed-pharmacy">
-            {pharmacyName || '약국'}에서
+          <div className="receipt-completed-line">
+            {pharmacyStr}에서
           </div>
-          <div className="receipt-completed-text">
+          <div className="receipt-completed-line-highlight">
             수령 완료되었습니다.
           </div>
         </div>
