@@ -16,19 +16,11 @@ function GlobalDispensingNotification() {
   const [notificationData, setNotificationData] = useState(null); // { dispensingId, prescriptionId, completedAt }
   const pendingTimersRef = useRef(new Map()); // { dispensingId: timerId }
   
-  // 디버깅: notificationData 변경 추적
-  useEffect(() => {
-    console.log('[GlobalNotification] notificationData 변경됨:', notificationData);
-  }, [notificationData]);
 
   // 전역 이벤트 리스너: DispensingStatusContainer에서 자동 완료 시 발생
   useEffect(() => {
-    console.log('[GlobalNotification] 컴포넌트 마운트됨, 이벤트 리스너 등록');
-    
     const handleDispensingCompleted = async (event) => {
-      console.log('[GlobalNotification] 전역 이벤트 수신됨!', event);
       const { dispensingId, completedAt } = event.detail || {};
-      console.log('[GlobalNotification] 이벤트 detail:', { dispensingId, completedAt });
       
       if (!dispensingId) {
         console.error('[GlobalNotification] dispensingId가 없음!');
@@ -37,9 +29,7 @@ function GlobalDispensingNotification() {
       
       // 이미 알림을 표시한 dispensingId인지 확인
       const notifiedIds = JSON.parse(localStorage.getItem('notifiedDispensingIds') || '[]');
-      console.log('[GlobalNotification] 이미 알림 표시한 ID 목록:', notifiedIds);
       if (notifiedIds.includes(dispensingId)) {
-        console.log('[GlobalNotification] 이미 알림 표시함, 건너뜀:', dispensingId);
         return;
       }
       
@@ -51,36 +41,26 @@ function GlobalDispensingNotification() {
         
         if (prescription) {
           prescriptionId = prescription.prescriptionId || prescription.receptionId;
-          console.log('[GlobalNotification] 처방전 찾음:', prescriptionId);
-        } else {
-          console.log('[GlobalNotification] 처방전을 찾지 못했지만 알림 표시:', dispensingId);
         }
       } catch (error) {
         console.error('[GlobalNotification] 처방전 찾기 실패, 하지만 알림 표시:', error);
       }
       
       // 처방전을 찾지 못해도 알림 표시 (dispensingId만으로도 가능)
-      console.log('[GlobalNotification] 전역 알림 데이터 설정:', { dispensingId, prescriptionId, completedAt });
       setNotificationData({
         dispensingId,
         prescriptionId: prescriptionId || dispensingId, // prescriptionId가 없으면 dispensingId 사용
         completedAt,
       });
       
-      console.log('[GlobalNotification] notificationData 상태 업데이트 완료');
-      
       // 알림 표시한 ID 저장
       notifiedIds.push(dispensingId);
       localStorage.setItem('notifiedDispensingIds', JSON.stringify(notifiedIds));
-      console.log('[GlobalNotification] localStorage 업데이트 완료');
     };
 
-    console.log('[GlobalNotification] window.addEventListener 호출');
     window.addEventListener('dispensingCompleted', handleDispensingCompleted);
-    console.log('[GlobalNotification] 이벤트 리스너 등록 완료');
     
     return () => {
-      console.log('[GlobalNotification] 컴포넌트 언마운트, 이벤트 리스너 제거');
       window.removeEventListener('dispensingCompleted', handleDispensingCompleted);
     };
   }, []);
@@ -98,24 +78,19 @@ function GlobalDispensingNotification() {
   // 조제 중인 처방전들의 dispensingId 추출 및 조제 상태 확인
   useEffect(() => {
     if (!prescriptionsQuery.data || prescriptionsQuery.isLoading) {
-      console.log('[GlobalNotification] 처방전 데이터 없음 또는 로딩 중');
       return;
     }
 
     const checkDispensingStatus = async () => {
       const prescriptions = prescriptionsQuery.data || [];
-      console.log('[GlobalNotification] 처방전 목록:', prescriptions);
       
       // 조제 중인 처방전 필터링 (dispensingId가 있고, 완료되지 않은 것)
       const dispensingPrescriptions = prescriptions.filter(
         p => p.dispensingId && !p.completed && !p.receivedAt
       );
-      
-      console.log('[GlobalNotification] 조제 중인 처방전:', dispensingPrescriptions);
 
       // 이미 알림을 표시한 dispensingId 목록 (localStorage 사용)
       const notifiedIds = JSON.parse(localStorage.getItem('notifiedDispensingIds') || '[]');
-      console.log('[GlobalNotification] 이미 알림 표시한 ID:', notifiedIds);
 
       // 각 조제 중인 처방전의 상태 확인
       for (const prescription of dispensingPrescriptions) {
@@ -123,22 +98,17 @@ function GlobalDispensingNotification() {
         
         // 이미 알림을 표시한 경우 건너뛰기
         if (notifiedIds.includes(dispensingIdStr)) {
-          console.log('[GlobalNotification] 이미 알림 표시함:', dispensingIdStr);
           continue;
         }
 
         try {
-          console.log('[GlobalNotification] 조제 상태 확인 중:', dispensingIdStr);
           const status = await dispensingApi.getStatus(dispensingIdStr);
-          console.log('[GlobalNotification] 조제 상태:', status);
           
           // 조제 완료 상태 확인 (COMPLETED, READY 또는 completedAt이 있는 경우)
           const isCompleted = status?.status === 'COMPLETED' 
             || status?.status === 'READY' 
             || status?.status === 'DONE'
             || (status?.completedAt && new Date(status.completedAt) <= new Date());
-          
-          console.log('[GlobalNotification] 조제 완료 여부:', isCompleted, 'status:', status?.status);
           
           if (isCompleted) {
             // 이미 완료된 경우 타이머가 있다면 정리
@@ -149,7 +119,6 @@ function GlobalDispensingNotification() {
             
             const completedAtTime = status.completedAt || new Date().toISOString();
             
-            console.log('[GlobalNotification] 알림 표시:', dispensingIdStr);
             setNotificationData({
               dispensingId: dispensingIdStr,
               prescriptionId: prescription.prescriptionId || prescription.receptionId,
@@ -157,7 +126,6 @@ function GlobalDispensingNotification() {
             });
             
             // 전역 이벤트 발생하여 조제상황 페이지 상태도 업데이트
-            console.log('[GlobalNotification] 전역 이벤트 발생하여 페이지 상태 업데이트:', { dispensingId: dispensingIdStr, completedAt: completedAtTime });
             const event = new CustomEvent('dispensingCompleted', {
               detail: {
                 dispensingId: dispensingIdStr,
@@ -180,11 +148,7 @@ function GlobalDispensingNotification() {
             break; // 한 번에 하나의 알림만 표시
           } else if ((status?.status == null || status?.completedAt == null) && !pendingTimersRef.current.has(dispensingIdStr)) {
             // 조제 완료 여부가 null인 경우 15초 타이머 시작
-            console.log('[GlobalNotification] 조제 완료 여부가 null, 15초 타이머 시작:', dispensingIdStr, 'status:', status);
-            
             const timerId = setTimeout(() => {
-              console.log('[GlobalNotification] 15초 경과, 자동 완료 처리:', dispensingIdStr);
-              
               const completedAtTime = new Date().toISOString();
               
               // 자동으로 완료 상태로 변경하고 알림 표시
@@ -195,7 +159,6 @@ function GlobalDispensingNotification() {
               });
               
               // 전역 이벤트 발생하여 조제상황 페이지 상태도 업데이트
-              console.log('[GlobalNotification] 전역 이벤트 발생하여 페이지 상태 업데이트:', { dispensingId: dispensingIdStr, completedAt: completedAtTime });
               const event = new CustomEvent('dispensingCompleted', {
                 detail: {
                   dispensingId: dispensingIdStr,
@@ -263,11 +226,8 @@ function GlobalDispensingNotification() {
     }
   };
 
-  // 디버깅: 모달 표시 여부 확인
+  // 모달 표시 여부 확인
   const isModalOpen = !!notificationData;
-  useEffect(() => {
-    console.log('[GlobalNotification] 모달 표시 여부:', isModalOpen, 'notificationData:', notificationData);
-  }, [isModalOpen, notificationData]);
 
   return (
     <>

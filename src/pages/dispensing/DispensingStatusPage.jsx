@@ -51,9 +51,6 @@ function DispensingStatusPage() {
     }
   }, []);
   
-  // 디버깅: 전달받은 정보 확인
-  console.log('전달받은 prescriptionIds:', prescriptionIdsFromState);
-  console.log('사용할 prescriptionId:', prescriptionId);
 
   const statusQuery = useQuery({
     queryKey: ['dispensing', dispensingId],
@@ -62,9 +59,6 @@ function DispensingStatusPage() {
     retry: false,
   });
   
-  // 디버깅: 약국 정보 확인
-  console.log('약국 정보 (state):', pharmacyFromState);
-  console.log('약국 정보 (statusQuery):', statusQuery.data);
   
   // 수령하기 버튼 클릭 후 수령 완료된 경우만 안내 페이지 표시
   // statusQuery가 로딩 중이거나 데이터가 없으면 false로 처리하여 지도 표시
@@ -84,19 +78,13 @@ function DispensingStatusPage() {
     mutationFn: async () => {
       try {
         // 1. 수령 완료 처리
-        console.log('수령 완료 처리 시작, dispensingId:', dispensingId);
         await dispensingApi.complete(dispensingId);
-        console.log('수령 완료 처리 성공');
         
         // 2. 처방전 상태 업데이트 (약국 이름, 수령 날짜)
         // 모든 처방전 ID에 대해 업데이트
         const prescriptionIdsToUpdate = prescriptionIdsFromState || (prescriptionId ? [prescriptionId] : []);
         const pharmacyName = pharmacyFromState?.name || statusQuery.data?.pharmacyName;
         const receivedAt = new Date().toISOString();
-        
-        console.log('처방전 업데이트 시작, prescriptionIds:', prescriptionIdsToUpdate);
-        console.log('약국 이름:', pharmacyName);
-        console.log('수령 날짜:', receivedAt);
         
         if (prescriptionIdsToUpdate.length > 0) {
           // 모든 처방전에 대해 병렬로 업데이트
@@ -109,20 +97,16 @@ function DispensingStatusPage() {
                   console.error('Invalid prescriptionId:', id);
                   return;
                 }
-                console.log('처방전 업데이트 중, prescriptionId:', prescriptionIdNum);
                 await prescriptionApi.updateStatus(prescriptionIdNum, {
                   pharmacyName,
                   completedAt: receivedAt
                 });
-                console.log('처방전 업데이트 성공, prescriptionId:', prescriptionIdNum);
               } catch (error) {
                 console.error('처방전 업데이트 실패, prescriptionId:', id, error);
                 throw error;
               }
             })
           );
-        } else {
-          console.warn('업데이트할 처방전 ID가 없습니다.');
         }
       } catch (error) {
         console.error('수령 완료 처리 중 오류 발생:', error);
@@ -179,9 +163,6 @@ function DispensingStatusPage() {
     || (statusQuery.data?.pharmacyLongitude && statusQuery.data.pharmacyLongitude !== 0 ? statusQuery.data.pharmacyLongitude : null)
     || pharmacyInfoQuery.data?.longitude;
   
-  // 디버깅: 약국 위치 확인
-  console.log('약국 위도:', pharmacyLatitude);
-  console.log('약국 경도:', pharmacyLongitude);
 
   // 지도 중심점 계산 (병원과 약국의 중간점)
   const mapCenter = useMemo(() => {
@@ -234,7 +215,6 @@ function DispensingStatusPage() {
 
   // 경로 정보 업데이트 핸들러
   const handleRouteInfoUpdate = ({ distance, duration }) => {
-    console.log('경로 정보 업데이트:', { distance, duration });
     const distanceElement = document.getElementById('routeDistance');
     const durationElement = document.getElementById('routeDuration');
     

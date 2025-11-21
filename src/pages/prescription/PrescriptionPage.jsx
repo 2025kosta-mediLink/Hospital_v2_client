@@ -59,13 +59,11 @@ function PrescriptionPage() {
   };
 
   const handleStatusCheck = async (prescriptionId, item) => {
-    console.log('Check dispensing status:', prescriptionId, item);
     // 처방전 데이터에서 약국 정보 가져오기
     const prescription = item || listQuery.data?.find(p => (p.prescriptionId ?? p.receptionId) === prescriptionId);
     
     // dispensingId가 없으면 조제 상황 확인 불가 (약국 선택 전)
     if (!prescription?.dispensingId) {
-      console.log('조제 상황 확인 불가: 약국을 선택하지 않았습니다.');
       // 모달 표시
       setModalMessage('아직 조제 신청이 되지 않았어요!');
       setIsNotDispensedModalOpen(true);
@@ -77,21 +75,16 @@ function PrescriptionPage() {
     
     try {
       const status = await dispensingApi.getStatus(dispensingId);
-      console.log('조제 상태:', status);
-      console.log('조제 상태 status 필드:', status?.status);
-      console.log('조제 상태 receivedAt 필드:', status?.receivedAt);
       
       // 조제 상태가 null이거나 아직 시작되지 않은 경우
       // receivedAt이 없으면 아직 처방전이 약국에 전달되지 않은 상태
       if (!status || !status.receivedAt || status.receivedAt === null || status.receivedAt === '') {
-        console.log('조제 신청이 되지 않음, 모달 표시');
         setModalMessage('아직 조제 신청이 되지 않았어요!');
         setIsNotDispensedModalOpen(true);
         return;
       }
       
       // 조제가 시작된 경우 조제상황 페이지로 이동
-      console.log('조제가 시작됨, 조제상황 페이지로 이동');
       const targetId = `dispensingId=${dispensingId}`;
       
       // 전달할 state 객체 생성
@@ -115,7 +108,6 @@ function PrescriptionPage() {
       });
     } catch (error) {
       console.error('조제 상태 확인 실패:', error);
-      console.log('에러 발생, 모달 표시');
       // 에러가 발생하면 모달 표시 (약국 선택 후 처방전 전달 전 상태일 가능성)
       setModalMessage('아직 조제 신청이 되지 않았어요!');
       setIsNotDispensedModalOpen(true);
