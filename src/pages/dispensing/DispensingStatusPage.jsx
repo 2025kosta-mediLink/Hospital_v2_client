@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { dispensingApi } from '../../api/dispensing';
@@ -18,10 +18,36 @@ function DispensingStatusPage() {
   const dispensingId = searchParams.get('dispensingId') || searchParams.get('prescriptionId');
   const prescriptionId = searchParams.get('prescriptionId') || location.state?.prescriptionIds?.[0];
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const routeInfoHeaderRef = useRef(null);
   
   // 약국 검색 페이지에서 전달받은 약국 정보 및 처방전 ID
   const pharmacyFromState = location.state?.pharmacy;
   const prescriptionIdsFromState = location.state?.prescriptionIds;
+
+  // 헤더 높이에 따라 route-info-header 위치 조정
+  useEffect(() => {
+    const updateHeaderPosition = () => {
+      if (routeInfoHeaderRef.current) {
+        const header = document.querySelector('header');
+        if (header) {
+          const headerHeight = header.offsetHeight || 64;
+          routeInfoHeaderRef.current.style.top = `${headerHeight}px`;
+        } else {
+          routeInfoHeaderRef.current.style.top = '0px';
+        }
+      }
+    };
+
+    updateHeaderPosition();
+    
+    // ResizeObserver로 헤더 크기 변화 감지
+    const header = document.querySelector('header');
+    if (header) {
+      const resizeObserver = new ResizeObserver(updateHeaderPosition);
+      resizeObserver.observe(header);
+      return () => resizeObserver.disconnect();
+    }
+  }, []);
   
   // 디버깅: 전달받은 정보 확인
   console.log('전달받은 prescriptionIds:', prescriptionIdsFromState);
@@ -186,22 +212,31 @@ function DispensingStatusPage() {
 
   // 경로 정보 업데이트 핸들러
   const handleRouteInfoUpdate = ({ distance, duration }) => {
+    console.log('경로 정보 업데이트:', { distance, duration });
     const distanceElement = document.getElementById('routeDistance');
     const durationElement = document.getElementById('routeDuration');
     
     if (distanceElement) {
       // 거리 표시 (미터를 적절한 단위로 변환)
-      if (distance < 1000) {
-        distanceElement.textContent = `${Math.round(distance)}m`;
+      if (distance && distance > 0) {
+        if (distance < 1000) {
+          distanceElement.textContent = `${Math.round(distance)}m`;
+        } else {
+          distanceElement.textContent = `${(distance / 1000).toFixed(1)}km`;
+        }
       } else {
-        distanceElement.textContent = `${(distance / 1000).toFixed(1)}km`;
+        distanceElement.textContent = '-';
       }
     }
     
     if (durationElement) {
       // 시간 표시 (초를 분으로 변환)
-      const durationMin = Math.round(duration / 60);
-      durationElement.textContent = `${durationMin}분`;
+      if (duration != null && duration >= 0) {
+        const durationMin = Math.max(1, Math.round(duration / 60)); // 최소 1분
+        durationElement.textContent = `${durationMin}분`;
+      } else {
+        durationElement.textContent = '-';
+      }
     }
   };
 
@@ -214,7 +249,8 @@ function DispensingStatusPage() {
       <div>
         {/* 지도 및 경로 안내 */}
         <div className="map-container">
-          <div className="route-info-header">
+          {/* 경로 정보 헤더 - 지도 위에 고정 */}
+          <div className="route-info-header" ref={routeInfoHeaderRef}>
             <span className="route-path">
               강북삼성병원 외래동 → <span id="pharmacyName">
                 {pharmacyFromState?.name || pharmacyInfoQuery.data?.name || statusQuery.data?.pharmacyName || '약국명'}

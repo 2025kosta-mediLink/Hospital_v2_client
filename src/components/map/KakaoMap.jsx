@@ -474,15 +474,39 @@ function KakaoMap({
       }
 
       // 경로 정보 업데이트 (거리, 시간)
-      const section = routeData.sections[0];
-      const distance = section?.distance || (routeData.summary?.distance || 0);
-      const duration = section?.duration || (routeData.summary?.duration || 0);
+      // summary에서 전체 경로 정보 가져오기 (summary가 전체 경로의 총합)
+      let distance = routeData.summary?.distance || 0;
+      let duration = routeData.summary?.duration || 0;
 
-      if (onRouteInfoUpdate) {
+      // summary에 없으면 sections에서 합산
+      if (!distance && routeData.sections && routeData.sections.length > 0) {
+        distance = routeData.sections.reduce((sum, section) => sum + (section.distance || 0), 0);
+      }
+      if (!duration && routeData.sections && routeData.sections.length > 0) {
+        duration = routeData.sections.reduce((sum, section) => sum + (section.duration || 0), 0);
+      }
+
+      // duration이 여전히 없으면 distance 기반으로 추정 (도보: 분속 80m 기준, 초 단위)
+      if (!duration || duration === 0) {
+        if (distance > 0) {
+          // 분속 80m = 초속 1.33m, 따라서 duration(초) = distance(미터) / 1.33
+          duration = Math.round(distance / 1.33);
+        }
+      }
+
+      console.log('경로 정보 - distance:', distance, 'duration:', duration);
+      console.log('summary:', routeData.summary);
+      console.log('sections:', routeData.sections);
+
+      // distance가 있으면 duration도 추정했으므로 업데이트 호출
+      if (onRouteInfoUpdate && distance > 0) {
+        console.log('경로 정보 업데이트 호출:', { distance, duration });
         onRouteInfoUpdate({
           distance: distance,
-          duration: duration
+          duration: duration || 0
         });
+      } else {
+        console.warn('경로 정보 업데이트 호출 안함:', { distance, duration, hasCallback: !!onRouteInfoUpdate });
       }
 
     } catch (err) {
