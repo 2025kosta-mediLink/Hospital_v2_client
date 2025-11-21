@@ -95,6 +95,14 @@ function App() {
         }
       />
       <Route
+        path="/reservation/complete"
+        element={
+          <ProtectedRoute>
+            <ReservationCompletePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/reservation/list"
         element={
           <ProtectedRoute>
