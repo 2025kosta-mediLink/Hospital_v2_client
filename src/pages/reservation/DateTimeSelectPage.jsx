@@ -122,8 +122,15 @@ function DateTimeSelectPage() {
   // 예약 확정
   const handleConfirmReservation = async () => {
     try {
+      // 시간을 2자리로 포맷팅 (예: "9:30" -> "09:30")
+      const [hours, minutes] = selectedTime.split(":");
+      const formattedTime = `${hours.padStart(2, "0")}:${minutes.padStart(
+        2,
+        "0"
+      )}:00`;
+
       // YYYY-MM-DD HH:MM:SS 형식으로 변환
-      const appointmentAt = `${selectedDate} ${selectedTime}:00`;
+      const appointmentAt = `${selectedDate} ${formattedTime}`;
 
       // 1️⃣ 예약 생성 (ID만 반환)
       const createResult = await createReservation({
