@@ -40,7 +40,6 @@ function PrescriptionDetailPage() {
     queryFn: async () => {
       try {
         const response = await getMyInfo();
-        console.log('회원 정보 API 응답:', response);
         // ApiResponse 구조: { isSuccess, code, message, data }
         // data에 MemberInfoResponse가 포함됨
         return response;
@@ -57,7 +56,6 @@ function PrescriptionDetailPage() {
   
   // 회원 정보 추출 (ApiResponse.data 구조)
   const memberInfo = memberQuery.data?.data;
-  console.log('추출된 회원 정보:', memberInfo);
 
   // 오늘 날짜를 YYYY-MM-DD 형식으로 반환
   const getTodayDate = () => {

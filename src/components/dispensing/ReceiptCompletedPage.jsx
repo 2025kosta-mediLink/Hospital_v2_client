@@ -4,10 +4,6 @@
  */
 
 function ReceiptCompletedPage({ pharmacyName, receivedAt }) {
-  // 디버깅: 전달받은 props 확인
-  console.log('[ReceiptCompletedPage] pharmacyName:', pharmacyName);
-  console.log('[ReceiptCompletedPage] receivedAt:', receivedAt, typeof receivedAt);
-  
   // 날짜 포맷팅 (예: 2025년 1월 15일)
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -15,7 +11,6 @@ function ReceiptCompletedPage({ pharmacyName, receivedAt }) {
       const date = new Date(dateString);
       // 유효한 날짜인지 확인
       if (isNaN(date.getTime())) {
-        console.warn('Invalid date:', dateString);
         return '';
       }
       const year = date.getFullYear();
@@ -23,7 +18,6 @@ function ReceiptCompletedPage({ pharmacyName, receivedAt }) {
       const day = date.getDate();
       // NaN 체크
       if (isNaN(year) || isNaN(month) || isNaN(day)) {
-        console.warn('Invalid date values:', { year, month, day, dateString });
         return '';
       }
       return `${year}년 ${month}월 ${day}일`;
