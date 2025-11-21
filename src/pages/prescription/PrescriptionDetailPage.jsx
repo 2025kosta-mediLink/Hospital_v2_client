@@ -66,7 +66,8 @@ function PrescriptionDetailPage() {
     return `${year}-${month}-${day}`;
   };
 
-  // 고정 데이터
+  // 고정 데이터 (향후 사용 예정)
+  // eslint-disable-next-line no-unused-vars
   const fixedData = {
     hospitalId: '12345678',
     hospitalName: '강북삼성병원',

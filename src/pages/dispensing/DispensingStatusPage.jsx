@@ -194,7 +194,7 @@ function DispensingStatusPage() {
       }];
     }
     return [];
-  }, [pharmacyLatitude, pharmacyLongitude, pharmacyFromState, pharmacyInfoQuery.data, statusQuery.data]);
+  }, [pharmacyLatitude, pharmacyLongitude, pharmacyFromState, pharmacyInfoQuery.data, statusQuery.data, pharmacyName]);
 
   // 경로 정보 (병원 -> 약국)
   const route = useMemo(() => {

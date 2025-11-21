@@ -112,6 +112,7 @@ export default function ReceptionListPage() {
 
   useEffect(() => {
     loadData(selectedMonth, selectedStatus);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMonth, selectedStatus]);
 
   // 필터 변경

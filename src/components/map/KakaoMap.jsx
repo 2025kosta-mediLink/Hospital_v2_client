@@ -328,7 +328,7 @@ function KakaoMap({
   }, []);
 
   /** 경로 정보를 DOM에 업데이트 */
-  const updateRouteInfo = useCallback((distance, duration) => {
+  const _updateRouteInfo = useCallback((distance, duration) => {
     if (!onRouteInfoUpdate) {
       // 콜백이 없으면 직접 DOM 업데이트
       const distanceElement = document.getElementById('routeDistance');
