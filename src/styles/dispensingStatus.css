@@ -432,27 +432,24 @@ body.modal-open nav {
 .receipt-completed-message {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 4px;
+    align-items: center;
+    text-align: center;
 }
 
-.receipt-completed-date {
+.receipt-completed-line {
     font-size: 18px;
     font-weight: 600;
     color: #111827;
-    margin-bottom: 4px;
+    line-height: 1.4;
 }
 
-.receipt-completed-pharmacy {
-    font-size: 18px;
-    font-weight: 600;
-    color: #111827;
-}
-
-.receipt-completed-text {
+.receipt-completed-line-highlight {
     font-size: 20px;
     font-weight: 700;
     color: #2563eb;
     margin-top: 8px;
+    line-height: 1.4;
 }
 
 /* 수령 완료 확인 모달 */

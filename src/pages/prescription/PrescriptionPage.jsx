@@ -89,16 +89,25 @@ function PrescriptionPage() {
       console.log('조제가 시작됨, 조제상황 페이지로 이동');
       const targetId = `dispensingId=${dispensingId}`;
       
+      // 전달할 state 객체 생성
+      const navigationState = {};
+      
       if (prescription?.pharmacyName) {
-        // 약국 이름이 있으면 약국 정보를 함께 전달
-        navigate(`/dispensing?${targetId}`, {
-          state: {
-            pharmacyName: prescription.pharmacyName
-          }
-        });
-      } else {
-        navigate(`/dispensing?${targetId}`);
+        navigationState.pharmacyName = prescription.pharmacyName;
       }
+      
+      // 수령 날짜 정보 전달 (receivedAt, completedAt, completedDate 중 하나)
+      if (prescription?.receivedAt) {
+        navigationState.receivedAt = prescription.receivedAt;
+      } else if (prescription?.completedAt) {
+        navigationState.receivedAt = prescription.completedAt;
+      } else if (prescription?.completedDate) {
+        navigationState.receivedAt = prescription.completedDate;
+      }
+      
+      navigate(`/dispensing?${targetId}`, {
+        state: Object.keys(navigationState).length > 0 ? navigationState : undefined
+      });
     } catch (error) {
       console.error('조제 상태 확인 실패:', error);
       console.log('에러 발생, 모달 표시');
