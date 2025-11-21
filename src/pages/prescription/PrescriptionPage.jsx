@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { prescriptionApi } from '../../api/prescription';
+import { dispensingApi } from '../../api/dispensing';
 import AppLayout from '../../components/layout/AppLayout';
 import PrescriptionList from '../../components/prescription/PrescriptionList';
 import PrescriptionLoading from '../../components/prescription/PrescriptionLoading';
@@ -11,6 +12,7 @@ import '../../styles/prescriptionList.css';
 
 function PrescriptionPage() {
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [isNotDispensedModalOpen, setIsNotDispensedModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const listQuery = useQuery({
@@ -39,13 +41,70 @@ function PrescriptionPage() {
   };
 
   const handleViewPrescription = (prescriptionId) => {
-    console.log('View prescription:', prescriptionId);
-    // 처방전 상세 보기 로직
+    // 목록에서 해당 처방전 찾기
+    const prescription = listQuery.data?.find(
+      (p) => (p.prescriptionId ?? p.receptionId)?.toString() === prescriptionId?.toString()
+    );
+    
+    if (prescription) {
+      // 처방전 상세 페이지로 이동 (데이터 전달)
+      navigate(`/prescription/${prescriptionId}`, {
+        state: { prescription },
+      });
+    } else {
+      // 데이터를 찾지 못한 경우에도 이동 (상세 페이지에서 다시 조회)
+      navigate(`/prescription/${prescriptionId}`);
+    }
   };
 
-  const handleStatusCheck = (prescriptionId) => {
-    console.log('Check dispensing status:', prescriptionId);
-    navigate(`/dispensing?prescriptionId=${prescriptionId}`);
+  const handleStatusCheck = async (prescriptionId, item) => {
+    console.log('Check dispensing status:', prescriptionId, item);
+    // 처방전 데이터에서 약국 정보 가져오기
+    const prescription = item || listQuery.data?.find(p => (p.prescriptionId ?? p.receptionId) === prescriptionId);
+    
+    // dispensingId가 없으면 조제 상황 확인 불가 (약국 선택 전)
+    if (!prescription?.dispensingId) {
+      console.log('조제 상황 확인 불가: 약국을 선택하지 않았습니다.');
+      return;
+    }
+    
+    // dispensingId가 있으면 조제 상태 확인
+    const dispensingId = prescription.dispensingId;
+    
+    try {
+      const status = await dispensingApi.getStatus(dispensingId);
+      console.log('조제 상태:', status);
+      console.log('조제 상태 status 필드:', status?.status);
+      console.log('조제 상태 receivedAt 필드:', status?.receivedAt);
+      
+      // 조제 상태가 null이거나 아직 시작되지 않은 경우
+      // receivedAt이 없으면 아직 처방전이 약국에 전달되지 않은 상태
+      if (!status || !status.receivedAt || status.receivedAt === null || status.receivedAt === '') {
+        console.log('조제 신청이 되지 않음, 모달 표시');
+        setIsNotDispensedModalOpen(true);
+        return;
+      }
+      
+      // 조제가 시작된 경우 조제상황 페이지로 이동
+      console.log('조제가 시작됨, 조제상황 페이지로 이동');
+      const targetId = `dispensingId=${dispensingId}`;
+      
+      if (prescription?.pharmacyName) {
+        // 약국 이름이 있으면 약국 정보를 함께 전달
+        navigate(`/dispensing?${targetId}`, {
+          state: {
+            pharmacyName: prescription.pharmacyName
+          }
+        });
+      } else {
+        navigate(`/dispensing?${targetId}`);
+      }
+    } catch (error) {
+      console.error('조제 상태 확인 실패:', error);
+      console.log('에러 발생, 모달 표시');
+      // 에러가 발생하면 모달 표시 (약국 선택 후 처방전 전달 전 상태일 가능성)
+      setIsNotDispensedModalOpen(true);
+    }
   };
 
   return (
@@ -90,6 +149,22 @@ function PrescriptionPage() {
           >
             약국 찾기
           </button>
+        </div>
+      )}
+
+      {/* 아직 조제 신청이 되지 않았어요 모달 */}
+      {isNotDispensedModalOpen && (
+        <div className="completion-notification-modal" style={{ display: 'flex', zIndex: 3000 }}>
+          <div className="completion-notification-overlay" onClick={() => setIsNotDispensedModalOpen(false)}></div>
+          <div className="completion-notification-content">
+            <div className="completion-notification-message">아직 조제 신청이 되지 않았어요!</div>
+            <button 
+              className="completion-notification-btn" 
+              onClick={() => setIsNotDispensedModalOpen(false)}
+            >
+              확인
+            </button>
+          </div>
         </div>
       )}
     </AppLayout>

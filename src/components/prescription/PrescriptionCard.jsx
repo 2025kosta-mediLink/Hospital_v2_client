@@ -6,8 +6,9 @@
 function PrescriptionCard({ item, onSelect, isSelected, onView, onStatusCheck }) {
   const isCompleted = item.completed || false;
   const hasReceivedAt = item.receivedAt != null;
-  // 완료되었거나 수령한 경우 선택 불가
-  const canSelect = !isCompleted && !hasReceivedAt;
+  const hasDispensingId = item.dispensingId != null; // 조제 중인 경우 (약국 선택 후)
+  // 완료되었거나 수령했거나 조제 중인 경우 선택 불가
+  const canSelect = !isCompleted && !hasReceivedAt && !hasDispensingId;
   
   // 날짜 포맷팅 함수
   const formatDate = (dateString) => {
@@ -64,7 +65,7 @@ function PrescriptionCard({ item, onSelect, isSelected, onView, onStatusCheck })
           disabled={!canSelect}
           onChange={handleCheckboxChange}
         />
-        <div className={`checkbox-custom ${isCompleted || hasReceivedAt ? 'completed' : ''}`}></div>
+        <div className={`checkbox-custom ${isCompleted || hasReceivedAt || hasDispensingId ? 'completed' : ''}`}></div>
       </label>
 
       {/* 수령 정보 (체크박스 아래) */}
@@ -104,7 +105,7 @@ function PrescriptionCard({ item, onSelect, isSelected, onView, onStatusCheck })
           </button>
           <button className="btn-status" onClick={(e) => {
             handleButtonClick(e);
-            onStatusCheck && onStatusCheck(getId());
+            onStatusCheck && onStatusCheck(getId(), item);
           }}>
             조제 상황 확인
           </button>
