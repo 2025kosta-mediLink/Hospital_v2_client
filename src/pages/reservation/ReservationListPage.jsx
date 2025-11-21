@@ -10,7 +10,7 @@ import {
   getReservationList,
   cancelReservation,
 } from "../../api/reservationApi";
-import { shareToKakao } from "../../utils/kakaoSdk";
+import { shareToKakao } from "../../utils/KakaoSdk";
 import {
   parseDateTime,
   formatDateLabel,
@@ -164,13 +164,10 @@ export default function ReservationListPage() {
 
   // 카카오톡 공유
   const handleShare = (item) => {
-    const shareUrl = window.location.href;
-
     shareToKakao({
       title: "MediLink 병원 예약 일정 안내",
       description: `📍 ${item.departmentName} - ${item.doctorName} 교수\n📅 ${item.dateLabel}\n⏰ ${item.timeLabel}`,
-      imageUrl: "https://your-image-url.com/hospital-logo.png",
-      linkUrl: shareUrl,
+      linkUrl: window.location.href,
     });
   };
 

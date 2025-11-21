@@ -4,7 +4,6 @@
 export const initKakaoSdk = () => {
   // 이미 초기화되어 있으면 스킵
   if (window.Kakao?.isInitialized()) {
-    console.log("✅ 카카오 SDK 이미 초기화됨");
     return;
   }
 
@@ -19,24 +18,12 @@ export const initKakaoSdk = () => {
     if (window.Kakao && !window.Kakao.isInitialized()) {
       const kakaoKey = import.meta.env.VITE_KAKAO_JS_KEY;
 
-      // 디버깅: 키 확인
-      // console.log(
-      //   "🔑 카카오 키:",
-      //   kakaoKey ? `${kakaoKey.substring(0, 10)}...` : "없음"
-      // );
-      // console.log("🌐 현재 도메인:", window.location.origin);
-
       if (kakaoKey) {
         try {
           window.Kakao.init(kakaoKey);
-          // console.log("✅ 카카오 SDK 초기화 완료");
-          // console.log("✅ 초기화 상태:", window.Kakao.isInitialized());
         } catch (error) {
           console.error("❌ 카카오 SDK 초기화 에러:", error);
         }
-      } else {
-        // 카카오 공유 기능을 사용하지 않는 경우 경고 제거
-        // console.warn("⚠️ VITE_KAKAO_JS_KEY가 .env 파일에 설정되지 않았습니다.");
       }
     }
   };
@@ -52,13 +39,6 @@ export const initKakaoSdk = () => {
  * 카카오톡 공유하기
  */
 export const shareToKakao = ({ title, description, imageUrl, linkUrl }) => {
-  // 디버깅 로그 추가
-  console.log("📤 카카오톡 공유 시도");
-  console.log("- Kakao 객체:", window.Kakao);
-  console.log("- 초기화 상태:", window.Kakao?.isInitialized());
-  console.log("- 공유 URL:", linkUrl);
-  console.log("- 이미지 URL:", imageUrl);
-
   if (!window.Kakao) {
     alert("카카오톡 SDK가 로드되지 않았습니다.");
     return;
@@ -69,10 +49,19 @@ export const shareToKakao = ({ title, description, imageUrl, linkUrl }) => {
     return;
   }
 
-  // ✅ 작동하는 기본 이미지 URL (카카오 공식 문서 예시)
+  // ✅ 환경변수 또는 현재 origin 사용
+  const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+  const shareUrl = linkUrl || window.location.href;
+
+  // localhost를 실제 URL로 대체 (개발 환경)
+  const finalUrl = shareUrl.includes("localhost")
+    ? shareUrl.replace(window.location.origin, baseUrl)
+    : shareUrl;
+
+  // ✅ 병원/의료 관련 기본 이미지 URL
   const defaultImage =
     imageUrl ||
-    "https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png";
+    "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FmCrZD%2FdJMcai2KTzH%2FAAAAAAAAAAAAAAAAAAAAAN8jFnO_X9StfMCY47mdztDkYP2S0jzcbMNfXRkRSxib%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1764514799%26allow_ip%3D%26allow_referer%3D%26signature%3DfjqD6TYYaMQdFZgsVMG%252BIPjUU4E%253D";
 
   try {
     window.Kakao.Share.sendDefault({
@@ -82,21 +71,20 @@ export const shareToKakao = ({ title, description, imageUrl, linkUrl }) => {
         description: description,
         imageUrl: defaultImage,
         link: {
-          mobileWebUrl: linkUrl,
-          webUrl: linkUrl,
+          mobileWebUrl: finalUrl,
+          webUrl: finalUrl,
         },
       },
       buttons: [
         {
           title: "웹으로 보기",
           link: {
-            mobileWebUrl: linkUrl,
-            webUrl: linkUrl,
+            mobileWebUrl: finalUrl,
+            webUrl: finalUrl,
           },
         },
       ],
     });
-    console.log("✅ 카카오톡 공유 요청 성공");
   } catch (error) {
     console.error("❌ 카카오톡 공유 에러:", error);
     alert(`공유하기에 실패했습니다: ${error.message}`);

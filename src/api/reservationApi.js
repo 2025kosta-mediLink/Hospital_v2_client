@@ -19,7 +19,6 @@ export const getAvailableTimeSlots = async (doctorId, date) => {
 
     // 400 에러 (휴진일, 스케줄 없음 등) - 빈 배열 반환
     if (error.response?.status === 400) {
-      console.log("[API] 해당 날짜에 예약 가능한 시간이 없습니다.");
       return {
         isSuccess: true,
         code: "200",
@@ -53,14 +52,10 @@ export const createReservation = async (reservationData) => {
       reservationTime: reservationData.appointmentAt.replace(" ", "T"),
     };
 
-    console.log("[API] createReservation 요청:", requestBody); // 디버깅용
-
     const response = await apiClient.post("/reservation", requestBody);
-    console.log("[API] createReservation 응답:", response.data);
     return response.data;
   } catch (error) {
     console.error("[API] createReservation 에러:", error);
-    console.error("[API] 에러 응답:", error.response?.data); // 디버깅용
 
     // 409 Conflict - 이미 예약된 시간
     if (error.response?.status === 409) {
