@@ -145,7 +145,7 @@ export default function ReceptionDetailModal({ isOpen, onClose, detail }) {
           {detail.symptomNames && detail.symptomNames.length > 0 && (
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0">
                   <svg
                     className="w-4 h-4 text-blue-600"
                     fill="none"
@@ -181,7 +181,7 @@ export default function ReceptionDetailModal({ isOpen, onClose, detail }) {
           {detail.noteToDoctor && detail.noteToDoctor.trim() !== "" && (
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0">
                   <svg
                     className="w-4 h-4 text-yellow-600"
                     fill="none"
