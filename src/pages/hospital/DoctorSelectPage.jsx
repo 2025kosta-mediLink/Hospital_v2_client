@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import BottomNav from "../../components/layout/BottomNav";
+import AlertModal from "../../components/common/AlertModal";
 import { getDoctorsByDepartment, getDoctorNotices } from "../../api/doctorApi";
+import { getAvailableTimeSlots } from "../../api/reservationApi";
 
 function DoctorSelectPage() {
   const navigate = useNavigate();
@@ -15,15 +17,46 @@ function DoctorSelectPage() {
   const [currentDoctorIndex, setCurrentDoctorIndex] = useState(0);
   const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [noticeHeight, setNoticeHeight] = useState(96); // 공지사항 높이 상태 추가
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  const [noticeHeight, setNoticeHeight] = useState(96);
   const tabsRef = useRef(null);
-  const noticeRef = useRef(null); // 공지사항 ref 추가
+  const noticeRef = useRef(null);
+  const timeoutRef = useRef(null);
+  const isRequestingRef = useRef(false);
+
+  // 모달 상태
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    type: "info",
+    title: "",
+    message: "",
+  });
+
+  // 모달 열기
+  const showAlert = (message, type = "info", title = "") => {
+    setAlertModal({
+      isOpen: true,
+      type,
+      title,
+      message,
+    });
+  };
+
+  // 모달 닫기
+  const closeAlert = () => {
+    setAlertModal({
+      isOpen: false,
+      type: "info",
+      title: "",
+      message: "",
+    });
+  };
 
   // 의사 목록 조회
   useEffect(() => {
     if (!departmentId) {
-      alert("진료과를 선택해주세요.");
-      navigate(-1);
+      showAlert("진료과를 선택해주세요.", "warning");
+      setTimeout(() => navigate(-1), 1500);
       return;
     }
 
@@ -35,7 +68,7 @@ function DoctorSelectPage() {
         if (result.isSuccess && result.data) {
           setDoctors(result.data);
 
-          // 모든 의사의 공지사항 수집 (에러 처리 불필요)
+          // 모든 의사의 공지사항 수집
           const noticePromises = result.data.map((doctor) =>
             getDoctorNotices(doctor.doctorId).then((res) => ({
               doctorId: doctor.doctorId,
@@ -60,14 +93,42 @@ function DoctorSelectPage() {
           setAllNotices(flatNotices);
         }
       } catch (error) {
-        alert(error.message);
+        showAlert(error.message, "error");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchDoctors();
-  }, [departmentId, navigate]);
+  }, [departmentId]);
+
+  // 페이지 진입 시 상태 초기화
+  useEffect(() => {
+    setIsCheckingAvailability(false);
+    setAlertModal({
+      isOpen: false,
+      type: "info",
+      title: "",
+      message: "",
+    });
+
+    // 컴포넌트 언마운트 시 타임아웃 정리
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  // location 변경 시에도 상태 초기화
+  useEffect(() => {
+    setIsCheckingAvailability(false);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, [location.pathname]);
 
   // 공지사항 자동 슬라이드 (5초)
   useEffect(() => {
@@ -99,24 +160,155 @@ function DoctorSelectPage() {
     }, 0);
   };
 
-  // 다음 버튼
-  const handleNext = () => {
+  // 다음 버튼 핸들러
+  const handleNext = async () => {
+    // 중복 클릭 방지
+    if (isRequestingRef.current || isCheckingAvailability) {
+      return;
+    }
+
     const selectedDoctor = doctors[currentDoctorIndex];
 
-    // 예약: 날짜/시간 선택 페이지
-    // 접수: 증상 입력 페이지
-    const nextPath =
-      from === "reservation" ? "/reservation/datetime" : "/reception/symptom";
+    if (from === "reservation") {
+      // 예약: 바로 날짜/시간 선택으로 이동
+      navigate("/reservation/datetime", {
+        state: {
+          from,
+          departmentId,
+          departmentName,
+          doctorId: selectedDoctor.doctorId,
+          doctorName: selectedDoctor.name,
+        },
+      });
+    } else if (from === "reception") {
+      // 요청 플래그 설정
+      isRequestingRef.current = true;
+      setIsCheckingAvailability(true);
 
-    navigate(nextPath, {
-      state: {
-        from,
-        departmentId,
-        departmentName,
-        doctorId: selectedDoctor.doctorId,
-        doctorName: selectedDoctor.name,
-      },
-    });
+      // 기존 타임아웃이 있으면 제거
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      // 타임아웃 설정 (10초)
+      timeoutRef.current = setTimeout(() => {
+        isRequestingRef.current = false;
+        setIsCheckingAvailability(false);
+        showAlert(
+          "요청 시간이 초과되었습니다.\n다시 시도해주세요.",
+          "error",
+          "시간 초과"
+        );
+        timeoutRef.current = null;
+      }, 10000);
+
+      // 약간의 지연을 주어 토큰이 완전히 설정되도록 함
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      try {
+        const today = new Date().toISOString().split("T")[0];
+        const result = await getAvailableTimeSlots(
+          selectedDoctor.doctorId,
+          today
+        );
+
+        // 타임아웃 클리어
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+
+        // 안전하게 slots 추출
+        let slots = { am: [], pm: [] };
+
+        if (result && result.data) {
+          slots = {
+            am: Array.isArray(result.data.am) ? result.data.am : [],
+            pm: Array.isArray(result.data.pm) ? result.data.pm : [],
+          };
+        }
+
+        // 오전/오후 모두 진료 불가능한 경우
+        if (slots.am.length === 0 && slots.pm.length === 0) {
+          showAlert(
+            `${selectedDoctor.name} 교수는 오늘 진료가 불가능합니다.\n다른 의사를 선택해주세요.`,
+            "warning",
+            "진료 불가"
+          );
+          isRequestingRef.current = false;
+          setIsCheckingAvailability(false);
+          return;
+        }
+
+        // 진료 가능하면 바로 증상 입력으로 이동
+        navigate("/reception/symptom", {
+          state: {
+            from,
+            departmentId,
+            departmentName,
+            doctorId: selectedDoctor.doctorId,
+            doctorName: selectedDoctor.name,
+          },
+        });
+      } catch (error) {
+        console.error("진료 가능 여부 확인 실패:", error);
+
+        // 타임아웃 클리어
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+
+        // 인증 오류 (401, 403)
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          showAlert(
+            "로그인이 만료되었습니다.\n다시 로그인해주세요.",
+            "error",
+            "인증 오류"
+          );
+          setTimeout(() => {
+            localStorage.clear();
+            sessionStorage.clear();
+            navigate("/login", { replace: true });
+          }, 1500);
+          isRequestingRef.current = false;
+          setIsCheckingAvailability(false);
+          return;
+        }
+
+        // 네트워크 오류
+        if (!error.response) {
+          showAlert("네트워크 연결을 확인해주세요.", "error", "연결 오류");
+        } else if (error.response?.status >= 500) {
+          showAlert(
+            "서버에 일시적인 문제가 발생했습니다.\n잠시 후 다시 시도해주세요.",
+            "error",
+            "서버 오류"
+          );
+        } else if (error.message && error.message.includes("예약 가능 시간")) {
+          showAlert(
+            "일시적인 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.",
+            "error",
+            "오류 발생"
+          );
+        } else {
+          showAlert(
+            error.message || "진료 가능 여부를 확인하는데 실패했습니다.",
+            "error",
+            "오류 발생"
+          );
+        }
+      } finally {
+        // 항상 실행: 로딩 상태 해제
+        isRequestingRef.current = false;
+        setIsCheckingAvailability(false);
+        // 타임아웃 정리
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+      }
+    }
   };
 
   const headerProps = {
@@ -145,12 +337,12 @@ function DoctorSelectPage() {
   return (
     <div className="min-h-screen bg-slate-100 flex justify-center">
       <div className="relative flex min-h-screen w-full max-w-[393px] flex-col bg-white">
-        {/* 헤더 - 고정 */}
+        {/* 헤더 */}
         <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[393px] z-50">
           <Header {...headerProps} />
         </div>
 
-        {/* 공지사항 영역 - 고정 */}
+        {/* 공지사항 영역 */}
         <div
           ref={noticeRef}
           className="fixed top-14 left-1/2 -translate-x-1/2 w-full max-w-[393px] px-4 pt-4 pb-2 z-40 bg-white"
@@ -176,7 +368,7 @@ function DoctorSelectPage() {
           </div>
         </div>
 
-        {/* 의사 이름 칩 - 고정 */}
+        {/* 의사 이름 칩 */}
         <div
           className="fixed left-1/2 -translate-x-1/2 w-full max-w-[393px] h-16 z-40 bg-white"
           style={{ top: `${56 + noticeHeight}px` }}
@@ -200,14 +392,13 @@ function DoctorSelectPage() {
                 </button>
               ))}
             </div>
-            {/* 왼쪽 그라데이션 힌트 */}
+            {/* 좌우 그라데이션 힌트 */}
             <div className="absolute left-0 top-0 h-full w-12 bg-gradient-to-r from-white to-transparent pointer-events-none"></div>
-            {/* 오른쪽 그라데이션 힌트 */}
             <div className="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
           </div>
         </div>
 
-        {/* 의사 카드 캐러셀 영역 - 고정 */}
+        {/* 의사 카드 캐러셀 영역 */}
         <div
           className="fixed left-1/2 -translate-x-1/2 w-full max-w-[393px] px-4 bg-[#F8FAFC] z-30"
           style={{
@@ -355,9 +546,14 @@ function DoctorSelectPage() {
         <div className="fixed bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-[393px] bg-white p-4 z-40 border-t border-gray-100">
           <button
             onClick={handleNext}
-            className="w-full rounded-xl bg-[#2563EB] text-white py-3.5 text-base font-bold shadow-sm active:scale-[0.99] transition"
+            disabled={isCheckingAvailability}
+            className={`w-full rounded-xl text-white py-3.5 text-base font-bold shadow-sm transition ${
+              isCheckingAvailability
+                ? "bg-slate-400 cursor-not-allowed"
+                : "bg-[#2563EB] active:scale-[0.99]"
+            }`}
           >
-            다음
+            {isCheckingAvailability ? "확인 중..." : "다음"}
           </button>
         </div>
 
@@ -365,6 +561,15 @@ function DoctorSelectPage() {
         <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[393px] z-50">
           <BottomNav />
         </div>
+
+        {/* Alert 모달 */}
+        <AlertModal
+          isOpen={alertModal.isOpen}
+          onClose={closeAlert}
+          type={alertModal.type}
+          title={alertModal.title}
+          message={alertModal.message}
+        />
       </div>
     </div>
   );
