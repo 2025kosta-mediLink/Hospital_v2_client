@@ -100,6 +100,7 @@ function DoctorSelectPage() {
     };
 
     fetchDoctors();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [departmentId]);
 
   // 페이지 진입 시 상태 초기화
