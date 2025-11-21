@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
 import App from "./App";
 import "./index.css";
-import { initKakaoSdk } from "./utils/kakaoSdk";
+import { initKakaoSdk } from "./utils/KakaoSdk";
 
 const queryClient = new QueryClient({
   defaultOptions: {

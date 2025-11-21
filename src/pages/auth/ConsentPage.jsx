@@ -32,13 +32,11 @@ function ConsentPage() {
   };
 
   // 개별 항목 변경 시 전체 동의 상태 동기화
+  const allAgreed = agreePrivacy && agreeMarketing && agreeService && agreeTele;
+  
   useEffect(() => {
-    if (agreePrivacy && agreeMarketing && agreeService && agreeTele) {
-      setAgreeAll(true);
-    } else {
-      setAgreeAll(false);
-    }
-  }, [agreePrivacy, agreeMarketing, agreeService, agreeTele]);
+    setAgreeAll(allAgreed);
+  }, [allAgreed]);
 
   // 확인 버튼 클릭
   const handleConfirm = () => {
