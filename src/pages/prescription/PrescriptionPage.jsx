@@ -41,8 +41,20 @@ function PrescriptionPage() {
   };
 
   const handleViewPrescription = (prescriptionId) => {
-    console.log('View prescription:', prescriptionId);
-    // 처방전 상세 보기 로직
+    // 목록에서 해당 처방전 찾기
+    const prescription = listQuery.data?.find(
+      (p) => (p.prescriptionId ?? p.receptionId)?.toString() === prescriptionId?.toString()
+    );
+    
+    if (prescription) {
+      // 처방전 상세 페이지로 이동 (데이터 전달)
+      navigate(`/prescription/${prescriptionId}`, {
+        state: { prescription },
+      });
+    } else {
+      // 데이터를 찾지 못한 경우에도 이동 (상세 페이지에서 다시 조회)
+      navigate(`/prescription/${prescriptionId}`);
+    }
   };
 
   const handleStatusCheck = async (prescriptionId, item) => {

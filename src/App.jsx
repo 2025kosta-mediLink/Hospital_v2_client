@@ -14,6 +14,7 @@ import ReservationListPage from "./pages/reservation/ReservationListPage";
 import TodayReservationPage from "./pages/reservation/TodayReservationPage";
 import ReceptionListPage from "./pages/reception/ReceptionListPage";
 import PrescriptionPage from "./pages/prescription/PrescriptionPage";
+import PrescriptionDetailPage from "./pages/prescription/PrescriptionDetailPage";
 import PharmacySearchPage from "./pages/pharmacy/PharmacySearchPage";
 import DispensingStatusPage from "./pages/dispensing/DispensingStatusPage";
 import SymptomSelectPage from "./pages/reception/SymptomSelectPage";
@@ -119,6 +120,14 @@ function App() {
         element={
           <ProtectedRoute>
             <PrescriptionPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/prescription/:prescriptionId"
+        element={
+          <ProtectedRoute>
+            <PrescriptionDetailPage />
           </ProtectedRoute>
         }
       />
