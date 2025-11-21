@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { dispensingApi } from '../../api/dispensing';
@@ -7,6 +7,7 @@ import { prescriptionApi } from '../../api/prescription';
 import AppLayout from '../../components/layout/AppLayout';
 import DispensingStatusContainer from './DispensingStatusContainer';
 import ReceiptConfirmModal from '../../components/dispensing/ReceiptConfirmModal';
+import ReceiptCompletedPage from '../../components/dispensing/ReceiptCompletedPage';
 import KakaoMap from '../../components/map/KakaoMap';
 import '../../styles/dispensingStatus.css';
 
@@ -18,10 +19,37 @@ function DispensingStatusPage() {
   const dispensingId = searchParams.get('dispensingId') || searchParams.get('prescriptionId');
   const prescriptionId = searchParams.get('prescriptionId') || location.state?.prescriptionIds?.[0];
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const routeInfoHeaderRef = useRef(null);
   
   // 약국 검색 페이지에서 전달받은 약국 정보 및 처방전 ID
   const pharmacyFromState = location.state?.pharmacy;
   const prescriptionIdsFromState = location.state?.prescriptionIds;
+  const pharmacyNameFromState = location.state?.pharmacyName; // 처방전 페이지에서 전달받은 약국 이름
+
+  // 헤더 높이에 따라 route-info-header 위치 조정
+  useEffect(() => {
+    const updateHeaderPosition = () => {
+      if (routeInfoHeaderRef.current) {
+        const header = document.querySelector('header');
+        if (header) {
+          const headerHeight = header.offsetHeight || 64;
+          routeInfoHeaderRef.current.style.top = `${headerHeight}px`;
+        } else {
+          routeInfoHeaderRef.current.style.top = '0px';
+        }
+      }
+    };
+
+    updateHeaderPosition();
+    
+    // ResizeObserver로 헤더 크기 변화 감지
+    const header = document.querySelector('header');
+    if (header) {
+      const resizeObserver = new ResizeObserver(updateHeaderPosition);
+      resizeObserver.observe(header);
+      return () => resizeObserver.disconnect();
+    }
+  }, []);
   
   // 디버깅: 전달받은 정보 확인
   console.log('전달받은 prescriptionIds:', prescriptionIdsFromState);
@@ -37,6 +65,14 @@ function DispensingStatusPage() {
   // 디버깅: 약국 정보 확인
   console.log('약국 정보 (state):', pharmacyFromState);
   console.log('약국 정보 (statusQuery):', statusQuery.data);
+  
+  // 수령하기 버튼 클릭 후 수령 완료된 경우만 안내 페이지 표시
+  // statusQuery가 로딩 중이거나 데이터가 없으면 false로 처리하여 지도 표시
+  const isReceived = !statusQuery.isLoading && statusQuery.data?.status === 'RECEIVED_BY_USER';
+  const receivedAt = statusQuery.data?.receivedAt;
+  const pharmacyNameForCompleted = statusQuery.data?.pharmacyName 
+    || pharmacyFromState?.name 
+    || pharmacyNameFromState;
 
   const completeMutation = useMutation({
     mutationFn: async () => {
@@ -111,15 +147,21 @@ function DispensingStatusPage() {
   const hospitalLatitude = 37.5685;
   const hospitalLongitude = 126.9672;
 
+  // 약국 이름 결정: location.state > pharmacyFromState > statusQuery > pharmacyNameFromState 순으로 우선 사용
+  const pharmacyName = location.state?.pharmacyName
+    || pharmacyFromState?.name 
+    || statusQuery.data?.pharmacyName 
+    || pharmacyNameFromState;
+
   // 약국 위치: 약국 검색 페이지에서 전달받은 정보 우선 사용, 없으면 백엔드 응답 사용, 없으면 API로 가져오기
   const pharmacyInfoQuery = useQuery({
-    queryKey: ['pharmacyInfo', statusQuery.data?.pharmacyName],
+    queryKey: ['pharmacyInfo', pharmacyName],
     queryFn: () => pharmacyApi.searchByName(
-      statusQuery.data?.pharmacyName || '',
+      pharmacyName || '',
       hospitalLatitude,
       hospitalLongitude
     ),
-    enabled: Boolean(statusQuery.data?.pharmacyName && !pharmacyFromState && !statusQuery.data?.pharmacyLatitude),
+    enabled: Boolean(pharmacyName && !pharmacyFromState && !statusQuery.data?.pharmacyLatitude),
     retry: false,
   });
 
@@ -155,7 +197,7 @@ function DispensingStatusPage() {
       const pharmacyData = pharmacyFromState || pharmacyInfoQuery.data || statusQuery.data;
       return [{
         pharmacyId: pharmacyData?.pharmacyId || 'pharmacy',
-        name: pharmacyData?.name || statusQuery.data?.pharmacyName || '약국',
+        name: pharmacyName || pharmacyData?.name || statusQuery.data?.pharmacyName || '약국',
         address: pharmacyData?.address || statusQuery.data?.pharmacyAddress || '',
         latitude: pharmacyLatitude,
         longitude: pharmacyLongitude,
@@ -186,22 +228,31 @@ function DispensingStatusPage() {
 
   // 경로 정보 업데이트 핸들러
   const handleRouteInfoUpdate = ({ distance, duration }) => {
+    console.log('경로 정보 업데이트:', { distance, duration });
     const distanceElement = document.getElementById('routeDistance');
     const durationElement = document.getElementById('routeDuration');
     
     if (distanceElement) {
       // 거리 표시 (미터를 적절한 단위로 변환)
-      if (distance < 1000) {
-        distanceElement.textContent = `${Math.round(distance)}m`;
+      if (distance && distance > 0) {
+        if (distance < 1000) {
+          distanceElement.textContent = `${Math.round(distance)}m`;
+        } else {
+          distanceElement.textContent = `${(distance / 1000).toFixed(1)}km`;
+        }
       } else {
-        distanceElement.textContent = `${(distance / 1000).toFixed(1)}km`;
+        distanceElement.textContent = '-';
       }
     }
     
     if (durationElement) {
       // 시간 표시 (초를 분으로 변환)
-      const durationMin = Math.round(duration / 60);
-      durationElement.textContent = `${durationMin}분`;
+      if (duration != null && duration >= 0) {
+        const durationMin = Math.max(1, Math.round(duration / 60)); // 최소 1분
+        durationElement.textContent = `${durationMin}분`;
+      } else {
+        durationElement.textContent = '-';
+      }
     }
   };
 
@@ -209,15 +260,43 @@ function DispensingStatusPage() {
     <AppLayout
       headerProps={{
         // title: '조제 상황',
+        leftSlot: <div style={{ width: '44px', height: '44px' }} />, // 뒤로가기 버튼 숨김
+        rightSlot: (
+          <button
+            type="button"
+            onClick={() => navigate('/prescription')}
+            aria-label="처방전 목록으로"
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-slate-100 active:scale-95 transition"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              fill="none"
+              className="text-slate-500"
+              aria-hidden="true"
+            >
+              <path
+                d="M18 6L6 18M6 6L18 18"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        ),
       }}
     >
       <div>
-        {/* 지도 및 경로 안내 */}
+        {/* 지도 및 경로 안내 - 수령 완료된 경우 표시하지 않음 */}
+        {!isReceived && (
         <div className="map-container">
-          <div className="route-info-header">
+          {/* 경로 정보 헤더 - 지도 위에 고정 */}
+          <div className="route-info-header" ref={routeInfoHeaderRef}>
             <span className="route-path">
               강북삼성병원 외래동 → <span id="pharmacyName">
-                {pharmacyFromState?.name || pharmacyInfoQuery.data?.name || statusQuery.data?.pharmacyName || '약국명'}
+                {pharmacyName || pharmacyFromState?.name || pharmacyInfoQuery.data?.name || statusQuery.data?.pharmacyName || '약국명'}
               </span>
             </span>
             <div className="route-details" id="routeDetails">
@@ -275,13 +354,23 @@ function DispensingStatusPage() {
             )}
           </div>
         </div>
+        )}
 
-        {/* 조제 현황 */}
+        {/* 조제 현황 또는 수령 완료 안내 */}
         <div className="dispensing-status">
-          <DispensingStatusContainer
-            dispensingId={dispensingId}
-            onComplete={handleCompleteClick}
-          />
+          {isReceived ? (
+            <ReceiptCompletedPage
+              pharmacyName={pharmacyNameForCompleted}
+              receivedAt={receivedAt}
+            />
+          ) : (
+            <DispensingStatusContainer
+              dispensingId={dispensingId}
+              onComplete={handleCompleteClick}
+              fromNotification={location.state?.fromNotification}
+              completedAt={location.state?.completedAt}
+            />
+          )}
         </div>
 
         {/* 수령 완료 확인 모달 */}

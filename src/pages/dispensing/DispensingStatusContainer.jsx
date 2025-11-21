@@ -9,7 +9,7 @@ import { dispensingApi } from '../../api/dispensing';
 import DispensingStatusCard from '../../components/dispensing/DispensingStatusCard';
 import CompletionNotificationModal from '../../components/dispensing/CompletionNotificationModal';
 
-function DispensingStatusContainer({ dispensingId, onComplete }) {
+function DispensingStatusContainer({ dispensingId, onComplete, fromNotification, completedAt }) {
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
   const [autoCompleted, setAutoCompleted] = useState(false);
   
@@ -41,40 +41,164 @@ function DispensingStatusContainer({ dispensingId, onComplete }) {
     completedAt: null
   });
   
-  // 백엔드 데이터가 로드되면 상태 업데이트
+  // 알림으로 들어온 경우 또는 이미 알림을 받은 경우 즉시 완료 상태로 설정 (최우선)
   useEffect(() => {
+    // 알림으로 들어온 경우
+    if (fromNotification && completedAt) {
+      console.log('[DispensingStatusContainer] 알림으로 들어옴, 즉시 완료 상태로 설정:', completedAt);
+      setDisplayStatus(prev => ({
+        ...prev,
+        status: 'COMPLETED',
+        completedAt: completedAt
+      }));
+      setAutoCompleted(true);
+      return;
+    }
+
+    // 이미 알림을 받은 dispensingId인지 확인 (localStorage에서)
+    if (dispensingId) {
+      const notifiedIds = JSON.parse(localStorage.getItem('notifiedDispensingIds') || '[]');
+      const dispensingIdStr = String(dispensingId);
+      
+      if (notifiedIds.includes(dispensingIdStr)) {
+        // 저장된 completedAt 가져오기
+        const completedAtMap = JSON.parse(localStorage.getItem('notifiedDispensingCompletedAt') || '{}');
+        const savedCompletedAt = completedAtMap[dispensingIdStr] || new Date().toISOString();
+        
+        console.log('[DispensingStatusContainer] 이미 알림을 받은 dispensingId, 완료 상태로 설정:', dispensingIdStr, savedCompletedAt);
+        setDisplayStatus(prev => ({
+          ...prev,
+          status: 'COMPLETED',
+          completedAt: savedCompletedAt
+        }));
+        setAutoCompleted(true);
+      }
+    }
+  }, [fromNotification, completedAt, dispensingId]);
+
+  // 백엔드 데이터가 로드되면 상태 업데이트 (알림을 받은 경우가 아닐 때만)
+  useEffect(() => {
+    // 알림으로 들어온 경우는 이미 완료 상태로 설정했으므로 건너뛰기
+    if (fromNotification && completedAt) {
+      return;
+    }
+
+    // 이미 알림을 받은 dispensingId인 경우도 건너뛰기
+    if (dispensingId) {
+      const notifiedIds = JSON.parse(localStorage.getItem('notifiedDispensingIds') || '[]');
+      const dispensingIdStr = String(dispensingId);
+      if (notifiedIds.includes(dispensingIdStr)) {
+        return;
+      }
+    }
+
     if (statusQuery.data) {
       console.log('백엔드 조제 정보:', statusQuery.data);
       console.log('약사 이름:', statusQuery.data.dispenserName);
       console.log('예상 완료 시간:', statusQuery.data.estimatedCompletionTime);
+      console.log('백엔드 상태:', statusQuery.data.status);
+      console.log('백엔드 completedAt:', statusQuery.data.completedAt);
+      
+      // 백엔드에서 실제 상태 확인
+      const backendStatus = statusQuery.data.status;
+      const backendCompletedAt = statusQuery.data.completedAt;
+      
+      // 백엔드에 완료 상태가 있는지 확인
+      const hasBackendCompletedStatus = backendStatus === 'COMPLETED' 
+        || backendStatus === 'READY' 
+        || backendStatus === 'DONE'
+        || (backendCompletedAt && new Date(backendCompletedAt) <= new Date());
       
       setDisplayStatus(prev => ({
         ...prev,
         dispenserName: statusQuery.data.dispenserName || prev.dispenserName,
         estimatedCompletionTime: statusQuery.data.estimatedCompletionTime || prev.estimatedCompletionTime,
+        // 백엔드에 완료 상태가 있으면 사용, 없으면 IN_PROGRESS 유지 (10초 자동 완료 대기)
+        ...(hasBackendCompletedStatus ? {
+          status: 'COMPLETED',
+          completedAt: backendCompletedAt || prev.completedAt
+        } : {
+          status: 'IN_PROGRESS' // 백엔드 상태가 없거나 진행 중이면 IN_PROGRESS 유지
+        })
       }));
+      
+      // 백엔드에 완료 상태가 있으면 자동 완료 플래그 설정
+      if (hasBackendCompletedStatus) {
+        setAutoCompleted(true);
+      }
     }
-  }, [statusQuery.data]);
+  }, [statusQuery.data, fromNotification, completedAt]);
 
-  // 10초 후 자동 완료 처리
+  // 전역 이벤트 리스너: GlobalDispensingNotification에서 알림이 뜰 때 상태 업데이트
   useEffect(() => {
-    if (!autoCompleted) {
+    const handleDispensingCompleted = (event) => {
+      const { dispensingId: eventDispensingId, completedAt: eventCompletedAt } = event.detail || {};
+      
+      // 현재 dispensingId와 일치하는 경우에만 상태 업데이트
+      if (eventDispensingId && String(eventDispensingId) === String(dispensingId)) {
+        console.log('[DispensingStatusContainer] 전역 이벤트 수신, 완료 상태로 업데이트:', { eventDispensingId, eventCompletedAt });
+        setDisplayStatus(prev => ({
+          ...prev,
+          status: 'COMPLETED',
+          completedAt: eventCompletedAt || prev.completedAt
+        }));
+        setAutoCompleted(true);
+      }
+    };
+
+    window.addEventListener('dispensingCompleted', handleDispensingCompleted);
+    
+    return () => {
+      window.removeEventListener('dispensingCompleted', handleDispensingCompleted);
+    };
+  }, [dispensingId]);
+
+  // 10초 후 자동 완료 처리 (백엔드에 완료 상태가 없고, 알림으로 들어온 경우가 아닐 때만 실행)
+  useEffect(() => {
+    if (!autoCompleted && dispensingId && !fromNotification) {
+      // 백엔드 데이터가 로드되었지만 완료 상태가 없는 경우에만 실행
+      const hasBackendCompletedStatus = statusQuery.data && (
+        statusQuery.data.status === 'COMPLETED' 
+        || statusQuery.data.status === 'READY' 
+        || statusQuery.data.status === 'DONE'
+        || (statusQuery.data.completedAt && new Date(statusQuery.data.completedAt) <= new Date())
+      );
+      
+      // 백엔드에 완료 상태가 있으면 자동 완료 실행하지 않음
+      if (hasBackendCompletedStatus) {
+        return;
+      }
       const timer = setTimeout(() => {
+        const completedAt = new Date().toISOString();
+        
         // 3단계를 완료 상태로 변경
         setDisplayStatus(prev => ({
           ...prev,
           status: 'COMPLETED',
-          completedAt: new Date().toISOString()
+          completedAt
         }));
         setAutoCompleted(true);
         
-        // 알림 모달 표시
+        // 전역 알림을 위한 이벤트 발생
+        console.log('[DispensingStatusContainer] 조제 완료! 전역 이벤트 발생:', { dispensingId, completedAt });
+        const event = new CustomEvent('dispensingCompleted', {
+          detail: {
+            dispensingId: String(dispensingId),
+            completedAt
+          },
+          bubbles: true,
+          cancelable: true
+        });
+        const dispatched = window.dispatchEvent(event);
+        console.log('[DispensingStatusContainer] 이벤트 전달 성공:', dispatched);
+        
+        // 로컬 알림 모달도 표시 (조제상황 페이지에서)
         setIsCompletionModalOpen(true);
       }, 10000); // 10초 후
 
       return () => clearTimeout(timer);
     }
-  }, [autoCompleted]);
+  }, [autoCompleted, dispensingId, fromNotification, statusQuery.data]);
 
   // 수령 완료 핸들러
   const handleComplete = () => {

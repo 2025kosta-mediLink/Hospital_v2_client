@@ -74,11 +74,19 @@ function KakaoMap({
 
     const options = {
       center: new window.kakao.maps.LatLng(latitude, longitude),
-      level: 3, 
+      level: 3,
+      draggable: true, // 지도 드래그 활성화
+      scrollwheel: true, // 마우스 휠로 지도 확대/축소 활성화
+      disableDoubleClick: false, // 더블클릭 확대 활성화
+      disableDoubleClickZoom: false, // 더블클릭 확대 활성화
     };
 
     const map = new window.kakao.maps.Map(mapRef.current, options);
     mapInstanceRef.current = map;
+    
+    // 지도 드래그 명시적으로 활성화 (혹시 모를 상황 대비)
+    map.setDraggable(true);
+    
     setIsMapReady(true);
   }, [latitude, longitude]);
 
@@ -474,15 +482,39 @@ function KakaoMap({
       }
 
       // 경로 정보 업데이트 (거리, 시간)
-      const section = routeData.sections[0];
-      const distance = section?.distance || (routeData.summary?.distance || 0);
-      const duration = section?.duration || (routeData.summary?.duration || 0);
+      // summary에서 전체 경로 정보 가져오기 (summary가 전체 경로의 총합)
+      let distance = routeData.summary?.distance || 0;
+      let duration = routeData.summary?.duration || 0;
 
-      if (onRouteInfoUpdate) {
+      // summary에 없으면 sections에서 합산
+      if (!distance && routeData.sections && routeData.sections.length > 0) {
+        distance = routeData.sections.reduce((sum, section) => sum + (section.distance || 0), 0);
+      }
+      if (!duration && routeData.sections && routeData.sections.length > 0) {
+        duration = routeData.sections.reduce((sum, section) => sum + (section.duration || 0), 0);
+      }
+
+      // duration이 여전히 없으면 distance 기반으로 추정 (도보: 분속 80m 기준, 초 단위)
+      if (!duration || duration === 0) {
+        if (distance > 0) {
+          // 분속 80m = 초속 1.33m, 따라서 duration(초) = distance(미터) / 1.33
+          duration = Math.round(distance / 1.33);
+        }
+      }
+
+      console.log('경로 정보 - distance:', distance, 'duration:', duration);
+      console.log('summary:', routeData.summary);
+      console.log('sections:', routeData.sections);
+
+      // distance가 있으면 duration도 추정했으므로 업데이트 호출
+      if (onRouteInfoUpdate && distance > 0) {
+        console.log('경로 정보 업데이트 호출:', { distance, duration });
         onRouteInfoUpdate({
           distance: distance,
-          duration: duration
+          duration: duration || 0
         });
+      } else {
+        console.warn('경로 정보 업데이트 호출 안함:', { distance, duration, hasCallback: !!onRouteInfoUpdate });
       }
 
     } catch (err) {
@@ -592,6 +624,8 @@ function KakaoMap({
         left: 0,
         right: 0,
         bottom: 0,
+        touchAction: "pan-x pan-y pinch-zoom", // 모바일 드래그 및 핀치 줌 허용
+        userSelect: "none", // 텍스트 선택 방지
       }}
     />
   );
