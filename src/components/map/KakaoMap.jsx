@@ -74,11 +74,19 @@ function KakaoMap({
 
     const options = {
       center: new window.kakao.maps.LatLng(latitude, longitude),
-      level: 3, 
+      level: 3,
+      draggable: true, // 지도 드래그 활성화
+      scrollwheel: true, // 마우스 휠로 지도 확대/축소 활성화
+      disableDoubleClick: false, // 더블클릭 확대 활성화
+      disableDoubleClickZoom: false, // 더블클릭 확대 활성화
     };
 
     const map = new window.kakao.maps.Map(mapRef.current, options);
     mapInstanceRef.current = map;
+    
+    // 지도 드래그 명시적으로 활성화 (혹시 모를 상황 대비)
+    map.setDraggable(true);
+    
     setIsMapReady(true);
   }, [latitude, longitude]);
 
@@ -616,6 +624,8 @@ function KakaoMap({
         left: 0,
         right: 0,
         bottom: 0,
+        touchAction: "pan-x pan-y pinch-zoom", // 모바일 드래그 및 핀치 줌 허용
+        userSelect: "none", // 텍스트 선택 방지
       }}
     />
   );
