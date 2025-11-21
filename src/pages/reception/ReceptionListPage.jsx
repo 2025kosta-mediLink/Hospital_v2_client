@@ -12,7 +12,7 @@ import HistoryList from "../../components/common/HistoryList";
 import ReceptionDetailModal from "../../components/reception/ReceptionDetailModal";
 import CancelConfirmModal from "../../components/common/CancelConfirmModal";
 import AlertModal from "../../components/common/AlertModal";
-import { shareToKakao } from "../../utils/kakaoSdk";
+import { shareToKakao } from "../../utils/KakaoSdk";
 import {
   parseDateTime,
   formatDateLabel,
@@ -184,7 +184,6 @@ export default function ReceptionListPage() {
           ? "진료완료"
           : "취소"
       }`,
-      imageUrl: "https://your-image-url.com/hospital-logo.png",
       linkUrl: shareUrl,
     });
   };

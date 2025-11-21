@@ -69,10 +69,10 @@ export const shareToKakao = ({ title, description, imageUrl, linkUrl }) => {
     return;
   }
 
-  // ✅ 작동하는 기본 이미지 URL (카카오 공식 문서 예시)
+  // ✅ 병원/의료 관련 기본 이미지 URL
   const defaultImage =
     imageUrl ||
-    "https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png";
+    "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FmCrZD%2FdJMcai2KTzH%2FAAAAAAAAAAAAAAAAAAAAAN8jFnO_X9StfMCY47mdztDkYP2S0jzcbMNfXRkRSxib%2Fimg.png%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1764514799%26allow_ip%3D%26allow_referer%3D%26signature%3DfjqD6TYYaMQdFZgsVMG%252BIPjUU4E%253D";
 
   try {
     window.Kakao.Share.sendDefault({
