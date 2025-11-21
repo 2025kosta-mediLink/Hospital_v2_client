@@ -17,12 +17,12 @@ export default function AlertModal({
 }) {
   if (!isOpen) return null;
 
-  // 타입별 아이콘 및 색상 설정
+  // 타입별 아이콘 설정
   const typeConfig = {
     info: {
       icon: (
         <svg
-          className="w-6 h-6 text-blue-600"
+          className="w-8 h-8 text-blue-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -36,14 +36,11 @@ export default function AlertModal({
         </svg>
       ),
       iconBg: "bg-blue-100",
-      messageBg: "bg-blue-50",
-      messageText: "text-blue-800",
-      buttonColor: "bg-blue-600 hover:bg-blue-700",
     },
     success: {
       icon: (
         <svg
-          className="w-6 h-6 text-green-600"
+          className="w-8 h-8 text-blue-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -56,15 +53,12 @@ export default function AlertModal({
           />
         </svg>
       ),
-      iconBg: "bg-green-100",
-      messageBg: "bg-green-50",
-      messageText: "text-green-800",
-      buttonColor: "bg-green-600 hover:bg-green-700",
+      iconBg: "bg-blue-100",
     },
     warning: {
       icon: (
         <svg
-          className="w-6 h-6 text-yellow-600"
+          className="w-8 h-8 text-orange-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -77,15 +71,12 @@ export default function AlertModal({
           />
         </svg>
       ),
-      iconBg: "bg-yellow-100",
-      messageBg: "bg-yellow-50",
-      messageText: "text-yellow-800",
-      buttonColor: "bg-yellow-600 hover:bg-yellow-700",
+      iconBg: "bg-orange-100",
     },
     error: {
       icon: (
         <svg
-          className="w-6 h-6 text-red-600"
+          className="w-8 h-8 text-red-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -99,9 +90,6 @@ export default function AlertModal({
         </svg>
       ),
       iconBg: "bg-red-100",
-      messageBg: "bg-red-50",
-      messageText: "text-red-800",
-      buttonColor: "bg-red-500 hover:bg-red-600",
     },
   };
 
@@ -109,63 +97,41 @@ export default function AlertModal({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-600/20 px-4"
-      style={{ margin: 0, left: 0, right: 0 }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-[340px] overflow-hidden flex flex-col shadow-2xl"
+        className="bg-white rounded-2xl w-full max-w-[340px] p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 헤더 */}
-        {title && (
-          <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0">
-            <h2 className="text-base font-bold text-gray-900">{title}</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+        {/* 아이콘 */}
+        <div className="flex justify-center mb-4">
+          <div
+            className={`w-16 h-16 rounded-full ${config.iconBg} flex items-center justify-center`}
+          >
+            {config.icon}
           </div>
+        </div>
+
+        {/* 제목 */}
+        {title && (
+          <h2 className="text-lg font-bold text-gray-900 text-center mb-2">
+            {title}
+          </h2>
         )}
 
-        {/* 내용 */}
-        <div className="p-4 space-y-3">
-          {/* 메시지 박스 */}
-          <div
-            className={`${config.messageBg} rounded-xl p-3 flex items-center gap-3`}
-          >
-            <div
-              className={`flex-shrink-0 w-10 h-10 rounded-full ${config.iconBg} flex items-center justify-center`}
-            >
-              {config.icon}
-            </div>
-            <p className={`text-sm ${config.messageText} flex-1`}>{message}</p>
-          </div>
-        </div>
+        {/* 메시지 */}
+        <p className="text-sm text-gray-600 text-center mb-6 whitespace-pre-line leading-relaxed">
+          {message}
+        </p>
 
-        {/* 하단 버튼 */}
-        <div className="bg-white border-t border-gray-200 p-3 flex-shrink-0">
-          <button
-            onClick={onClose}
-            className={`w-full py-2.5 text-white text-sm font-semibold rounded-xl transition-colors ${config.buttonColor}`}
-          >
-            {confirmText}
-          </button>
-        </div>
+        {/* 버튼 */}
+        <button
+          onClick={onClose}
+          className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors"
+        >
+          {confirmText}
+        </button>
       </div>
     </div>
   );

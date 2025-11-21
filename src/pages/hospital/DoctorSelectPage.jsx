@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import BottomNav from "../../components/layout/BottomNav";
+import AlertModal from "../../components/common/AlertModal";
 import { getDoctorsByDepartment, getDoctorNotices } from "../../api/doctorApi";
+import { getAvailableTimeSlots } from "../../api/reservationApi";
 
 function DoctorSelectPage() {
   const navigate = useNavigate();
@@ -15,15 +17,43 @@ function DoctorSelectPage() {
   const [currentDoctorIndex, setCurrentDoctorIndex] = useState(0);
   const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [noticeHeight, setNoticeHeight] = useState(96); // 공지사항 높이 상태 추가
+  const [noticeHeight, setNoticeHeight] = useState(96);
   const tabsRef = useRef(null);
-  const noticeRef = useRef(null); // 공지사항 ref 추가
+  const noticeRef = useRef(null);
+
+  // 모달 상태
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    type: "info",
+    title: "",
+    message: "",
+  });
+
+  // 모달 열기
+  const showAlert = (message, type = "info", title = "") => {
+    setAlertModal({
+      isOpen: true,
+      type,
+      title,
+      message,
+    });
+  };
+
+  // 모달 닫기
+  const closeAlert = () => {
+    setAlertModal({
+      isOpen: false,
+      type: "info",
+      title: "",
+      message: "",
+    });
+  };
 
   // 의사 목록 조회
   useEffect(() => {
     if (!departmentId) {
-      alert("진료과를 선택해주세요.");
-      navigate(-1);
+      showAlert("진료과를 선택해주세요.", "warning");
+      setTimeout(() => navigate(-1), 1500);
       return;
     }
 
@@ -35,7 +65,7 @@ function DoctorSelectPage() {
         if (result.isSuccess && result.data) {
           setDoctors(result.data);
 
-          // 모든 의사의 공지사항 수집 (에러 처리 불필요)
+          // 모든 의사의 공지사항 수집
           const noticePromises = result.data.map((doctor) =>
             getDoctorNotices(doctor.doctorId).then((res) => ({
               doctorId: doctor.doctorId,
@@ -60,7 +90,7 @@ function DoctorSelectPage() {
           setAllNotices(flatNotices);
         }
       } catch (error) {
-        alert(error.message);
+        showAlert(error.message, "error");
       } finally {
         setIsLoading(false);
       }
@@ -99,24 +129,78 @@ function DoctorSelectPage() {
     }, 0);
   };
 
-  // 다음 버튼
-  const handleNext = () => {
+  // 다음 버튼 핸들러
+  const handleNext = async () => {
     const selectedDoctor = doctors[currentDoctorIndex];
 
-    // 예약: 날짜/시간 선택 페이지
-    // 접수: 증상 입력 페이지
-    const nextPath =
-      from === "reservation" ? "/reservation/datetime" : "/reception/symptom";
+    if (from === "reservation") {
+      // 예약: 바로 날짜/시간 선택으로 이동
+      navigate("/reservation/datetime", {
+        state: {
+          from,
+          departmentId,
+          departmentName,
+          doctorId: selectedDoctor.doctorId,
+          doctorName: selectedDoctor.name,
+        },
+      });
+    } else if (from === "reception") {
+      // 접수: 오늘 진료 가능 여부만 확인
+      try {
+        const today = new Date().toISOString().split("T")[0];
+        const result = await getAvailableTimeSlots(
+          selectedDoctor.doctorId,
+          today
+        );
 
-    navigate(nextPath, {
-      state: {
-        from,
-        departmentId,
-        departmentName,
-        doctorId: selectedDoctor.doctorId,
-        doctorName: selectedDoctor.name,
-      },
-    });
+        // 안전하게 slots 추출
+        let slots = { am: [], pm: [] };
+
+        if (result && result.data) {
+          slots = {
+            am: Array.isArray(result.data.am) ? result.data.am : [],
+            pm: Array.isArray(result.data.pm) ? result.data.pm : [],
+          };
+        }
+
+        // 오전/오후 모두 진료 불가능한 경우
+        if (slots.am.length === 0 && slots.pm.length === 0) {
+          showAlert(
+            `${selectedDoctor.name} 교수는 오늘 진료가 불가능합니다.\n다른 의사를 선택해주세요.`,
+            "warning",
+            "진료 불가"
+          );
+          return;
+        }
+
+        // 진료 가능하면 바로 증상 입력으로 이동
+        navigate("/reception/symptom", {
+          state: {
+            from,
+            departmentId,
+            departmentName,
+            doctorId: selectedDoctor.doctorId,
+            doctorName: selectedDoctor.name,
+          },
+        });
+      } catch (error) {
+        console.error("진료 가능 여부 확인 실패:", error);
+
+        if (error.message && error.message.includes("예약 가능 시간")) {
+          showAlert(
+            "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+            "error",
+            "오류 발생"
+          );
+        } else {
+          showAlert(
+            error.message || "진료 가능 여부를 확인하는데 실패했습니다.",
+            "error",
+            "오류 발생"
+          );
+        }
+      }
+    }
   };
 
   const headerProps = {
@@ -145,12 +229,12 @@ function DoctorSelectPage() {
   return (
     <div className="min-h-screen bg-slate-100 flex justify-center">
       <div className="relative flex min-h-screen w-full max-w-[393px] flex-col bg-white">
-        {/* 헤더 - 고정 */}
+        {/* 헤더 */}
         <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[393px] z-50">
           <Header {...headerProps} />
         </div>
 
-        {/* 공지사항 영역 - 고정 */}
+        {/* 공지사항 영역 */}
         <div
           ref={noticeRef}
           className="fixed top-14 left-1/2 -translate-x-1/2 w-full max-w-[393px] px-4 pt-4 pb-2 z-40 bg-white"
@@ -176,7 +260,7 @@ function DoctorSelectPage() {
           </div>
         </div>
 
-        {/* 의사 이름 칩 - 고정 */}
+        {/* 의사 이름 칩 */}
         <div
           className="fixed left-1/2 -translate-x-1/2 w-full max-w-[393px] h-16 z-40 bg-white"
           style={{ top: `${56 + noticeHeight}px` }}
@@ -200,14 +284,13 @@ function DoctorSelectPage() {
                 </button>
               ))}
             </div>
-            {/* 왼쪽 그라데이션 힌트 */}
+            {/* 좌우 그라데이션 힌트 */}
             <div className="absolute left-0 top-0 h-full w-12 bg-gradient-to-r from-white to-transparent pointer-events-none"></div>
-            {/* 오른쪽 그라데이션 힌트 */}
             <div className="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
           </div>
         </div>
 
-        {/* 의사 카드 캐러셀 영역 - 고정 */}
+        {/* 의사 카드 캐러셀 영역 */}
         <div
           className="fixed left-1/2 -translate-x-1/2 w-full max-w-[393px] px-4 bg-[#F8FAFC] z-30"
           style={{
@@ -365,6 +448,15 @@ function DoctorSelectPage() {
         <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[393px] z-50">
           <BottomNav />
         </div>
+
+        {/* Alert 모달 */}
+        <AlertModal
+          isOpen={alertModal.isOpen}
+          onClose={closeAlert}
+          type={alertModal.type}
+          title={alertModal.title}
+          message={alertModal.message}
+        />
       </div>
     </div>
   );
