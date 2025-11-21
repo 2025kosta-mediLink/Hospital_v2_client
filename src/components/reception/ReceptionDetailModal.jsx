@@ -61,7 +61,7 @@ export default function ReceptionDetailModal({ isOpen, onClose, detail }) {
           {/* 진료 정보 */}
           <div className="bg-gray-50 rounded-xl p-3 space-y-2.5">
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-blue-600"
                   fill="none"
@@ -85,7 +85,7 @@ export default function ReceptionDetailModal({ isOpen, onClose, detail }) {
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-green-600"
                   fill="none"
@@ -109,7 +109,7 @@ export default function ReceptionDetailModal({ isOpen, onClose, detail }) {
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-purple-600"
                   fill="none"
