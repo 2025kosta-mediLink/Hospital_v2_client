@@ -13,6 +13,7 @@ import '../../styles/prescriptionList.css';
 function PrescriptionPage() {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [isNotDispensedModalOpen, setIsNotDispensedModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
   const navigate = useNavigate();
 
   const listQuery = useQuery({
@@ -65,6 +66,9 @@ function PrescriptionPage() {
     // dispensingId가 없으면 조제 상황 확인 불가 (약국 선택 전)
     if (!prescription?.dispensingId) {
       console.log('조제 상황 확인 불가: 약국을 선택하지 않았습니다.');
+      // 모달 표시
+      setModalMessage('아직 조제 신청이 되지 않았어요!');
+      setIsNotDispensedModalOpen(true);
       return;
     }
     
@@ -81,6 +85,7 @@ function PrescriptionPage() {
       // receivedAt이 없으면 아직 처방전이 약국에 전달되지 않은 상태
       if (!status || !status.receivedAt || status.receivedAt === null || status.receivedAt === '') {
         console.log('조제 신청이 되지 않음, 모달 표시');
+        setModalMessage('아직 조제 신청이 되지 않았어요!');
         setIsNotDispensedModalOpen(true);
         return;
       }
@@ -112,6 +117,7 @@ function PrescriptionPage() {
       console.error('조제 상태 확인 실패:', error);
       console.log('에러 발생, 모달 표시');
       // 에러가 발생하면 모달 표시 (약국 선택 후 처방전 전달 전 상태일 가능성)
+      setModalMessage('아직 조제 신청이 되지 않았어요!');
       setIsNotDispensedModalOpen(true);
     }
   };
@@ -166,7 +172,64 @@ function PrescriptionPage() {
         <div className="completion-notification-modal" style={{ display: 'flex', zIndex: 3000 }}>
           <div className="completion-notification-overlay" onClick={() => setIsNotDispensedModalOpen(false)}></div>
           <div className="completion-notification-content">
-            <div className="completion-notification-message">아직 조제 신청이 되지 않았어요!</div>
+            {/* 아이콘 - 약상자 (응급처치 키트) */}
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+                <svg
+                  className="w-10 h-10 text-blue-600"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  {/* 약상자 바디 - 둥근 모서리 직사각형 */}
+                  <rect
+                    x="4"
+                    y="8"
+                    width="16"
+                    height="12"
+                    rx="2"
+                    fill="currentColor"
+                  />
+                  {/* 약상자 뚜껑 */}
+                  <rect
+                    x="5.5"
+                    y="3.5"
+                    width="13"
+                    height="5.5"
+                    rx="1.5"
+                    fill="currentColor"
+                  />
+                  {/* 뚜껑 핸들/래치 - 작은 흰색 선 */}
+                  <line
+                    x1="11"
+                    y1="4"
+                    x2="13"
+                    y2="4"
+                    stroke="white"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                  {/* 십자가 표시 - 세로선 (균형잡힌 형태) */}
+                  <rect
+                    x="10.5"
+                    y="11"
+                    width="3"
+                    height="6"
+                    fill="white"
+                    rx="0.5"
+                  />
+                  {/* 십자가 표시 - 가로선 (균형잡힌 형태) */}
+                  <rect
+                    x="8.5"
+                    y="13"
+                    width="7"
+                    height="3"
+                    fill="white"
+                    rx="0.5"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className="completion-notification-message" style={{ whiteSpace: 'pre-line' }}>{modalMessage}</div>
             <button 
               className="completion-notification-btn" 
               onClick={() => setIsNotDispensedModalOpen(false)}
