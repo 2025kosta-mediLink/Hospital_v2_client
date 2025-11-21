@@ -3,7 +3,7 @@
  * 조제 현황의 진행 단계를 표시
  */
 
-function ProgressSteps({ status, autoComplete = false }) {
+function ProgressSteps({ status }) {
   // 날짜 포맷팅 (예: 25.11.18.14:20)
   const formatDate = (dateString) => {
     if (!dateString) return '';

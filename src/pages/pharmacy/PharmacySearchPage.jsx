@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { pharmacyApi } from '../../api/pharmacy';
@@ -36,7 +36,7 @@ function PharmacySearchPage() {
   // 사용자 현재 위치 (병원 위치로 고정)
   const [userLocation] = useState({ latitude: hospitalLatitude, longitude: hospitalLongitude });
   
-  const [radius, setRadius] = useState(2000);
+  const [radius] = useState(2000);
   const [selectedPharmacy, setSelectedPharmacy] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);

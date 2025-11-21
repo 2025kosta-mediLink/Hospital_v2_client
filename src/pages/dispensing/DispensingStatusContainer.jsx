@@ -42,6 +42,7 @@ function DispensingStatusContainer({ dispensingId, onComplete, fromNotification,
   });
   
   // 알림으로 들어온 경우 또는 이미 알림을 받은 경우 즉시 완료 상태로 설정 (최우선)
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     // 알림으로 들어온 경우
     if (fromNotification && completedAt) {
@@ -144,7 +145,7 @@ function DispensingStatusContainer({ dispensingId, onComplete, fromNotification,
       window.removeEventListener('dispensingCompleted', handleDispensingCompleted);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispensingId]);
+  }, []);
 
   // 10초 후 자동 완료 처리 (백엔드에 완료 상태가 없고, 알림으로 들어온 경우가 아닐 때만 실행)
   useEffect(() => {
