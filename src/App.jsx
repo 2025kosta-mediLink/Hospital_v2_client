@@ -18,10 +18,14 @@ import PharmacySearchPage from "./pages/pharmacy/PharmacySearchPage";
 import DispensingStatusPage from "./pages/dispensing/DispensingStatusPage";
 import SymptomSelectPage from "./pages/reception/SymptomSelectPage";
 import ReceptionCompletePage from "./pages/reception/ReceptionCompletePage";
+import GlobalDispensingNotification from "./components/dispensing/GlobalDispensingNotification";
 
 function App() {
   return (
-    <Routes>
+    <>
+      {/* 전역 조제 완료 알림 */}
+      <GlobalDispensingNotification />
+      <Routes>
       {/* 인증 불필요 페이지 */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
@@ -135,6 +139,7 @@ function App() {
         }
       />
     </Routes>
+    </>
   );
 }
 

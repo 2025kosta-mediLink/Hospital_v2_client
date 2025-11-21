@@ -18,13 +18,10 @@ function ProgressSteps({ status, autoComplete = false }) {
 
   // 상태에 따른 단계 결정
   const getStepStatus = (stepNumber) => {
-    if (!status) {
-      // autoComplete가 true이고 조제 중 상태일 때 3단계를 pending으로 표시
-      if (autoComplete && stepNumber === 3) return 'pending';
-      return 'pending';
-    }
+    // status가 없거나 status.status가 없으면 기본적으로 IN_PROGRESS로 처리
+    const currentStatus = status?.status || 'IN_PROGRESS';
     
-    switch (status.status) {
+    switch (currentStatus) {
       case 'RECEIVED':
         // 1단계: 완료 (파란색 체크), 2단계: 진행 중 (파란색), 3단계: 대기 (검정색 빈 동그라미)
         return stepNumber === 1 ? 'completed' : stepNumber === 2 ? 'current' : 'pending';
@@ -35,7 +32,8 @@ function ProgressSteps({ status, autoComplete = false }) {
         // 모든 단계 완료
         return 'completed';
       default:
-        return 'pending';
+        // 기본값: IN_PROGRESS로 처리
+        return stepNumber <= 2 ? 'completed' : 'pending';
     }
   };
 

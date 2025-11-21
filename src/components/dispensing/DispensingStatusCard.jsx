@@ -19,6 +19,13 @@ function DispensingStatusCard({ status, onComplete, autoComplete = false }) {
       {/* 조제 진행 상황 */}
       <ProgressSteps status={status} autoComplete={autoComplete} />
 
+      {/* RECEIVED_BY_USER 상태일 때 완료 메시지 (ProgressSteps 아래) */}
+      {isReceived && (
+        <div className="completed-message">
+          수령이 완료되었습니다.
+        </div>
+      )}
+
       {/* 액션 버튼 */}
       <div className="action-buttons">
         {/* 버튼은 항상 표시, 조제 완료 상태일 때만 활성화 */}
@@ -29,13 +36,6 @@ function DispensingStatusCard({ status, onComplete, autoComplete = false }) {
         >
           수령 하기
         </button>
-        
-        {/* RECEIVED_BY_USER 상태일 때 완료 메시지 */}
-        {isReceived && (
-          <div className="completed-message">
-            수령이 완료되었습니다.
-          </div>
-        )}
       </div>
     </div>
   );
