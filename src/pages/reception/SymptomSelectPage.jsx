@@ -105,11 +105,7 @@ export default function SymptomSelectPage() {
     try {
       let createResult;
 
-      // 예약 기반 접수 vs 일반 접수
       if (isReservationBased) {
-        console.log("=== 예약 기반 접수 생성 시작 ===");
-        console.log("reservationId:", reservationId);
-
         createResult = await createReceptionFromReservation({
           reservationId,
           symptomIds:
@@ -118,9 +114,6 @@ export default function SymptomSelectPage() {
           consentNotice: true,
         });
       } else {
-        console.log("=== 일반 접수 생성 시작 ===");
-        console.log("doctorId:", doctorId);
-
         createResult = await createReception({
           doctorId,
           symptomIds:
@@ -130,13 +123,13 @@ export default function SymptomSelectPage() {
         });
       }
 
-      console.log("접수 생성 결과:", createResult);
-
       if (createResult.isSuccess) {
         const receptionId =
           createResult.data?.receptionId ||
           createResult.data?.id ||
           createResult.data;
+
+        const queueNo = createResult.data?.queueNo; // 대기번호 추출
 
         const detailResult = await getReceptionDetail(receptionId);
 
@@ -145,10 +138,12 @@ export default function SymptomSelectPage() {
 
           navigate("/reception/complete", {
             state: {
-              receptionId,
+              receptionId, // receptionId 추가
+              queueNo: queueNo, // 대기번호 전달
               type: isReservationBased ? "RESERVATION" : "NORMAL",
               fromPage: isReservationBased ? fromPage : undefined,
               data: {
+                receptionId, // data 안에도 receptionId 추가
                 receptionNo:
                   detailResult.data.receptionNo ||
                   `REC-${String(receptionId).padStart(3, "0")}`,

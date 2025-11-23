@@ -19,6 +19,7 @@ function DoctorSelectPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const [noticeHeight, setNoticeHeight] = useState(96);
+  const [isReceptionClosed, setIsReceptionClosed] = useState(false); // 접수 마감 여부
   const tabsRef = useRef(null);
   const noticeRef = useRef(null);
   const timeoutRef = useRef(null);
@@ -163,6 +164,16 @@ function DoctorSelectPage() {
 
   // 다음 버튼 핸들러
   const handleNext = async () => {
+    // 접수 마감 시간 체크
+    if (from === "reception" && isReceptionClosed) {
+      showAlert(
+        "오후 5시 30분 이후에는 접수가 마감됩니다.\n내일 다시 이용해주세요.",
+        "warning",
+        "접수 마감"
+      );
+      return;
+    }
+
     // 중복 클릭 방지
     if (isRequestingRef.current || isCheckingAvailability) {
       return;
@@ -324,6 +335,28 @@ function DoctorSelectPage() {
       setNoticeHeight(height);
     }
   }, [currentNoticeIndex, allNotices]);
+
+  // 접수 마감 시간 확인 (오후 5시 30분 이후)
+  useEffect(() => {
+    if (from === "reception") {
+      const checkReceptionTime = () => {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+
+        // 17시 30분 이후면 접수 마감
+        const isClosed = hours > 17 || (hours === 17 && minutes >= 30);
+        setIsReceptionClosed(isClosed);
+      };
+
+      checkReceptionTime();
+
+      // 1분마다 체크 (정확한 시간에 마감 상태로 전환)
+      const interval = setInterval(checkReceptionTime, 60000);
+
+      return () => clearInterval(interval);
+    }
+  }, [from]);
 
   if (isLoading) {
     return (
@@ -547,14 +580,22 @@ function DoctorSelectPage() {
         <div className="fixed bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-[393px] bg-white p-4 z-40 border-t border-gray-100">
           <button
             onClick={handleNext}
-            disabled={isCheckingAvailability}
+            disabled={
+              isCheckingAvailability ||
+              (from === "reception" && isReceptionClosed)
+            }
             className={`w-full rounded-xl text-white py-3.5 text-base font-bold shadow-sm transition ${
-              isCheckingAvailability
+              isCheckingAvailability ||
+              (from === "reception" && isReceptionClosed)
                 ? "bg-slate-400 cursor-not-allowed"
                 : "bg-[#2563EB] active:scale-[0.99]"
             }`}
           >
-            {isCheckingAvailability ? "확인 중..." : "다음"}
+            {isCheckingAvailability
+              ? "확인 중..."
+              : from === "reception" && isReceptionClosed
+              ? "접수 마감"
+              : "다음"}
           </button>
         </div>
 

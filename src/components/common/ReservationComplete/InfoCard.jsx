@@ -92,6 +92,16 @@ export default function InfoCard({ type, numberLabel, data }) {
           </span>
         </div>
       )}
+
+      {/* 대기번호 표시 (접수만) */}
+      {!isReservation && data?.queueNo && (
+        <div className="flex items-center justify-between gap-3 pt-2 border-t border-gray-200">
+          <span className="text-sm font-medium text-gray-600">대기번호</span>
+          <span className="text-2xl font-bold text-blue-600">
+            {data.queueNo}번
+          </span>
+        </div>
+      )}
     </div>
   );
 }

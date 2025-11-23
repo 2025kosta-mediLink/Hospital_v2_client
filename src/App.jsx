@@ -20,143 +20,166 @@ import DispensingStatusPage from "./pages/dispensing/DispensingStatusPage";
 import SymptomSelectPage from "./pages/reception/SymptomSelectPage";
 import ReceptionCompletePage from "./pages/reception/ReceptionCompletePage";
 import GlobalDispensingNotification from "./components/dispensing/GlobalDispensingNotification";
+import {
+  PatientCallProvider,
+  usePatientCall,
+} from "./contexts/PatientCallContext";
+import PatientCallModal from "./components/common/PatientCallModal";
 
-function App() {
+function AppContent() {
+  const { isCallModalOpen, closeCallModal, callData } = usePatientCall();
+
   return (
     <>
       {/* 전역 조제 완료 알림 */}
       <GlobalDispensingNotification />
-      <Routes>
-      {/* 인증 불필요 페이지 */}
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/consent" element={<ConsentPage />} />
-      <Route path="/signup" element={<SignUpPage />} />
-      <Route path="/signup/done" element={<SignUpDonePage />} />
 
-      {/* 인증 필요 페이지 */}
-      <Route
-        path="/reservation/departments"
-        element={
-          <ProtectedRoute>
-            <DepartmentSelectPage />
-          </ProtectedRoute>
-        }
+      {/* 전역 환자 호출 모달 */}
+      <PatientCallModal
+        isOpen={isCallModalOpen}
+        onClose={closeCallModal}
+        callData={callData}
       />
-      <Route
-        path="/reservation/today"
-        element={
-          <ProtectedRoute>
-            <TodayReservationPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/reception/departments"
-        element={
-          <ProtectedRoute>
-            <DepartmentSelectPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/reservation/doctors"
-        element={
-          <ProtectedRoute>
-            <DoctorSelectPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/reception/doctors"
-        element={
-          <ProtectedRoute>
-            <DoctorSelectPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/reservation/datetime"
-        element={
-          <ProtectedRoute>
-            <DateTimeSelectPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/reception/symptom"
-        element={
-          <ProtectedRoute>
-            <SymptomSelectPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/reception/complete"
-        element={
-          <ProtectedRoute>
-            <ReceptionCompletePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/reservation/complete"
-        element={
-          <ProtectedRoute>
-            <ReservationCompletePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/reservation/list"
-        element={
-          <ProtectedRoute>
-            <ReservationListPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/reception/list"
-        element={
-          <ProtectedRoute>
-            <ReceptionListPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/prescription"
-        element={
-          <ProtectedRoute>
-            <PrescriptionPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/prescription/:prescriptionId"
-        element={
-          <ProtectedRoute>
-            <PrescriptionDetailPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/pharmacy"
-        element={
-          <ProtectedRoute>
-            <PharmacySearchPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dispensing"
-        element={
-          <ProtectedRoute>
-            <DispensingStatusPage />
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+
+      <Routes>
+        {/* 인증 불필요 페이지 */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/consent" element={<ConsentPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/signup/done" element={<SignUpDonePage />} />
+
+        {/* 인증 필요 페이지 */}
+        <Route
+          path="/reservation/departments"
+          element={
+            <ProtectedRoute>
+              <DepartmentSelectPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reservation/today"
+          element={
+            <ProtectedRoute>
+              <TodayReservationPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reception/departments"
+          element={
+            <ProtectedRoute>
+              <DepartmentSelectPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reservation/doctors"
+          element={
+            <ProtectedRoute>
+              <DoctorSelectPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reception/doctors"
+          element={
+            <ProtectedRoute>
+              <DoctorSelectPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reservation/datetime"
+          element={
+            <ProtectedRoute>
+              <DateTimeSelectPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reception/symptom"
+          element={
+            <ProtectedRoute>
+              <SymptomSelectPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reception/complete"
+          element={
+            <ProtectedRoute>
+              <ReceptionCompletePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reservation/complete"
+          element={
+            <ProtectedRoute>
+              <ReservationCompletePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reservation/list"
+          element={
+            <ProtectedRoute>
+              <ReservationListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reception/list"
+          element={
+            <ProtectedRoute>
+              <ReceptionListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/prescription"
+          element={
+            <ProtectedRoute>
+              <PrescriptionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/prescription/:prescriptionId"
+          element={
+            <ProtectedRoute>
+              <PrescriptionDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pharmacy"
+          element={
+            <ProtectedRoute>
+              <PharmacySearchPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dispensing"
+          element={
+            <ProtectedRoute>
+              <DispensingStatusPage />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </>
+  );
+}
+
+function App() {
+  return (
+    <PatientCallProvider>
+      <AppContent />
+    </PatientCallProvider>
   );
 }
 
