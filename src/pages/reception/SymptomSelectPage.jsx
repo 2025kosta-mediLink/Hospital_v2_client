@@ -138,11 +138,12 @@ export default function SymptomSelectPage() {
 
           navigate("/reception/complete", {
             state: {
-              receptionId,
+              receptionId, // receptionId 추가
               queueNo: queueNo, // 대기번호 전달
               type: isReservationBased ? "RESERVATION" : "NORMAL",
               fromPage: isReservationBased ? fromPage : undefined,
               data: {
+                receptionId, // data 안에도 receptionId 추가
                 receptionNo:
                   detailResult.data.receptionNo ||
                   `REC-${String(receptionId).padStart(3, "0")}`,

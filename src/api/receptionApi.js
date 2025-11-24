@@ -146,3 +146,14 @@ export const cancelReception = async (receptionId, reason = "") => {
     throw error;
   }
 };
+
+// 환자 호출 확인 API
+export const checkMyCall = async (receptionId) => {
+  try {
+    const response = await apiClient.get(`/waiting/reception/${receptionId}`);
+    return response.data;
+  } catch (error) {
+    console.error("호출 확인 실패:", error);
+    throw error;
+  }
+};
