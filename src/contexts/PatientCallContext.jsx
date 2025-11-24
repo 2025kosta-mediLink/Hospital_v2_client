@@ -21,28 +21,24 @@ export function PatientCallProvider({ children }) {
 
   // 활성 접수 등록
   const registerReception = useCallback((receptionId) => {
-    console.log("📝 접수 ID 등록:", receptionId);
     setActiveReceptionId(receptionId);
     localStorage.setItem(STORAGE_KEY, receptionId.toString());
   }, []);
 
   // 접수 해제
   const unregisterReception = useCallback(() => {
-    console.log("📝 접수 ID 해제");
     setActiveReceptionId(null);
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   // 환자 호출 처리
   const handlePatientCall = useCallback((data) => {
-    console.log("📢 환자 호출 - 모달 표시:", data);
     setCallData(data);
     setIsCallModalOpen(true);
   }, []);
 
   // 모달 닫기
   const closeCallModal = useCallback(() => {
-    console.log("❌ 호출 모달 닫기");
     setIsCallModalOpen(false);
     setCallData(null);
   }, []);
@@ -50,11 +46,8 @@ export function PatientCallProvider({ children }) {
   // 전역 Polling - 앱 어디서든 호출 감지
   useEffect(() => {
     if (!activeReceptionId) {
-      console.log("⚠️ activeReceptionId 없음, Polling 시작 안함");
       return;
     }
-
-    console.log("🔄 Polling 시작 - 접수 ID:", activeReceptionId);
 
     const checkPatientCall = async () => {
       try {
@@ -62,20 +55,16 @@ export function PatientCallProvider({ children }) {
           `/waiting/reception/${activeReceptionId}`
         );
 
-        console.log("📡 호출 확인 응답:", response.data);
-
         if (response.data?.isSuccess && response.data?.data) {
           const waitingData = response.data.data;
 
           // CALLED 상태 확인
           if (waitingData.status === "CALLED") {
-            console.log("🔔 환자 호출 감지!", waitingData);
-
             handlePatientCall({
               queueNo: waitingData.queueNo,
               doctorName: waitingData.doctorName || "담당 의사",
               departmentName: waitingData.departmentName || "진료과",
-              roomNumber: waitingData.roomNumber || "진료실",
+              roomNumber: waitingData.roomNumber || "1번 진료실",
             });
 
             // 호출 후 polling 중지
@@ -94,7 +83,6 @@ export function PatientCallProvider({ children }) {
     checkPatientCall();
 
     return () => {
-      console.log("🔄 Polling 중지");
       clearInterval(interval);
     };
   }, [activeReceptionId, handlePatientCall, unregisterReception]);

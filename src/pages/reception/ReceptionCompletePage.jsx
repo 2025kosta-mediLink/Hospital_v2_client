@@ -15,10 +15,6 @@ export default function ReceptionCompletePage() {
 
   // 접수 ID 등록 (polling 시작)
   useEffect(() => {
-    console.log("📋 전체 location.state:", location.state);
-    console.log("📋 receptionData:", receptionData);
-    console.log("📋 receptionId:", receptionId);
-
     if (receptionId) {
       registerReception(receptionId);
     } else {

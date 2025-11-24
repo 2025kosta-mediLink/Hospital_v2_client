@@ -1,26 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function PatientCallModal({ isOpen, onClose, callData }) {
   const [countdown, setCountdown] = useState(30);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen) {
-      setCountdown(30);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
       return;
     }
 
-    const timer = setInterval(() => {
+    // 모달이 열릴 때 카운트다운 초기화
+    setCountdown(30);
+
+    timerRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          onClose();
-          return 0;
+          // 다음 틱에 onClose 호출
+          setTimeout(() => onClose(), 0);
+          return 30;
         }
         return prev - 1;
       });
     }, 1000);
 
     return () => {
-      clearInterval(timer);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     };
   }, [isOpen, onClose]);
 
