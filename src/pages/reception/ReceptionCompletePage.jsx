@@ -6,12 +6,14 @@ import ReservationComplete from "../../components/common/ReservationComplete";
 export default function ReceptionCompletePage() {
   const location = useLocation();
   const receptionData = location.state?.data;
+  const queueNo = location.state?.queueNo; // 대기번호 추가
 
   const completeData = {
     reservationNo: receptionData?.receptionNo,
     departmentName: receptionData?.departmentName,
     doctorName: receptionData?.doctorName,
     symptom: receptionData?.symptom || "증상 미기재",
+    queueNo: queueNo, // 대기번호 추가
   };
 
   return (
