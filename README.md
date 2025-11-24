@@ -109,6 +109,13 @@
 ---
 
 ## 5. 🎥 시연 영상
-https://youtu.be/zXimlDv9Am8?si=e4rqPdGS71bVBVog
+<p align="center">
+  <a href="https://youtu.be/zXimlDv9Am8?si=e4rqPdGS71bVBVog" target="_blank">
+    <img
+      src="https://img.youtube.com/vi/zXimlDv9Am8/maxresdefault.jpg"
+      alt="MediLink 병원 통합 웹앱 시연 영상"
+    />
+  </a>
+</p>
 
 ---
