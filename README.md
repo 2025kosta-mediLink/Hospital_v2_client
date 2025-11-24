@@ -109,7 +109,6 @@
 ---
 
 ## 5. 🎥 시연 영상
-🎬 **시연 영상 준비 중입니다.**  
-(배포 버전 업로드 후 YouTube 링크 추가 예정)
+https://youtu.be/zXimlDv9Am8?si=e4rqPdGS71bVBVog
 
 ---
