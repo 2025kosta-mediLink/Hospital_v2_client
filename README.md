@@ -40,9 +40,9 @@
 - **PDF Export**: 처방전 PDF 변환 및 다운로드  
 - **Docker Compose + GitHub Actions**: 배포 자동화 파이프라인 구축  
 
-### 📱 화면 이미지
-> 환자 예약 → 접수 → 처방전 수령까지의 전체 UX 플로우  
-(Figma 캡처 또는 대표 화면 이미지 삽입)
+### 📱 화면 대표 이미지
+<img width="382" height="814" alt="캡처_2025_11_24_16_30_58_219" src="https://github.com/user-attachments/assets/addd1930-2266-4cb1-b647-b9696a8fe2de" />
+<img width="382" height="814" alt="캡처_2025_11_24_16_31_03_158" src="https://github.com/user-attachments/assets/cbf5de5c-ff2c-48f5-93e4-52feb4898396" />
 
 ---
 
