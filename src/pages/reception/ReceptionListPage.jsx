@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  getReceptionList,
+  cancelReception,
+  getReceptionDetail, // ✅ 경로 수정
+} from "../../api/receptionApi"; // ✅ reception → receptionApi
 import Header from "../../components/layout/Header";
 import BottomNav from "../../components/layout/BottomNav";
 import FilterTabs from "../../components/common/HistoryList/FilterTabs";
 import HistoryList from "../../components/common/HistoryList";
-import { getReceptionList, cancelReception } from "../../api/receptionApi";
+import ReceptionDetailModal from "../../components/reception/ReceptionDetailModal"; // ✅ 추가
 import { shareToKakao } from "../../utils/kakaoSdk";
 
 export default function ReceptionListPage() {
@@ -15,6 +20,8 @@ export default function ReceptionListPage() {
   const [groupedData, setGroupedData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // ✅ 추가
+  const [selectedDetail, setSelectedDetail] = useState(null); // ✅ 추가
 
   // 날짜/시간 파싱 함수
   const parseDateTime = (createdAt) => {
@@ -194,53 +201,79 @@ export default function ReceptionListPage() {
     });
   };
 
+  // ✅ 상세보기 핸들러 추가
+  const handleDetail = async (item) => {
+    try {
+      const result = await getReceptionDetail(item.receptionId);
+      if (result.isSuccess) {
+        setSelectedDetail(result.data);
+        setIsModalOpen(true);
+      } else {
+        alert("상세 정보를 불러올 수 없습니다.");
+      }
+    } catch (error) {
+      console.error("접수 상세 조회 실패:", error);
+      alert("상세 정보를 불러오는데 실패했습니다.");
+    }
+  };
+
   return (
-    <div className="flex flex-col h-screen max-w-[393px] mx-auto bg-white">
-      <Header showBack={true} />
+    <>
+      <div className="flex flex-col h-screen max-w-[393px] mx-auto bg-white">
+        <Header showBack={true} />
 
-      {/* 탭 네비게이션 (예약/접수) - 고정 */}
-      <nav className="sticky top-0 z-10 grid grid-cols-2 h-12 border-b border-gray-200 bg-white">
-        <button
-          onClick={() => navigate("/reservation/list")}
-          className="flex items-center justify-center text-sm font-semibold text-gray-500"
-        >
-          예약내역
-        </button>
-        <button className="relative flex items-center justify-center text-sm font-semibold text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-blue-600 after:rounded-full">
-          접수내역
-        </button>
-      </nav>
+        {/* 탭 네비게이션 (예약/접수) - 고정 */}
+        <nav className="sticky top-0 z-10 grid grid-cols-2 h-12 border-b border-gray-200 bg-white">
+          <button
+            onClick={() => navigate("/reservation/list")}
+            className="flex items-center justify-center text-sm font-semibold text-gray-500"
+          >
+            예약내역
+          </button>
+          <button className="relative flex items-center justify-center text-sm font-semibold text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:bg-blue-600 after:rounded-full">
+            접수내역
+          </button>
+        </nav>
 
-      {/* 필터 - 고정 */}
-      <div className="sticky top-12 z-10 bg-white">
-        <FilterTabs
-          type="reception"
-          selectedMonth={selectedMonth}
-          selectedStatus={selectedStatus}
-          monthOptions={monthOptions}
-          onFilterChange={handleFilterChange}
-        />
+        {/* 필터 - 고정 */}
+        <div className="sticky top-12 z-10 bg-white">
+          <FilterTabs
+            type="reception"
+            selectedMonth={selectedMonth}
+            selectedStatus={selectedStatus}
+            monthOptions={monthOptions}
+            onFilterChange={handleFilterChange}
+          />
+        </div>
+
+        {/* 리스트 - 스크롤 영역 */}
+        <main className="flex-1 overflow-y-auto bg-gray-50">
+          {isLoading || isDeleting ? (
+            <div className="flex items-center justify-center py-12 text-gray-500">
+              {isDeleting ? "취소 중..." : "로딩중..."}
+            </div>
+          ) : (
+            <HistoryList
+              type="reception"
+              groupedData={groupedData}
+              onCancel={handleCancel}
+              onShare={handleShare}
+              onDetail={handleDetail}
+            />
+          )}
+          {/* 하단 여백 (BottomNav 겹침 방지) */}
+          <div className="h-20" />
+        </main>
+
+        <BottomNav />
       </div>
 
-      {/* 리스트 - 스크롤 영역 */}
-      <main className="flex-1 overflow-y-auto bg-gray-50">
-        {isLoading || isDeleting ? (
-          <div className="flex items-center justify-center py-12 text-gray-500">
-            {isDeleting ? "취소 중..." : "로딩중..."}
-          </div>
-        ) : (
-          <HistoryList
-            type="reception"
-            groupedData={groupedData}
-            onCancel={handleCancel}
-            onShare={handleShare}
-          />
-        )}
-        {/* 하단 여백 (BottomNav 겹침 방지) */}
-        <div className="h-20" />
-      </main>
-
-      <BottomNav />
-    </div>
+      {/* ✅ 모달을 컨테이너 밖으로 이동 */}
+      <ReceptionDetailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        detail={selectedDetail}
+      />
+    </>
   );
 }

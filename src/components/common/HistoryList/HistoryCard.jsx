@@ -6,6 +6,7 @@ export default function HistoryCard({
   item,
   onCancel,
   onShare,
+  onDetail, // ✅ 추가
 }) {
   const isReservation = type === "reservation";
 
@@ -75,6 +76,16 @@ export default function HistoryCard({
       {/* 액션 버튼 */}
       {showButtons && (
         <div className="flex gap-2">
+          {/* ✅ 접수내역에만 상세보기 버튼 추가 */}
+          {!isReservation && onDetail && (
+            <button
+              onClick={() => onDetail(item)}
+              className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              상세보기
+            </button>
+          )}
+
           {isCancellable() && (
             <button
               onClick={() => onCancel(item)}

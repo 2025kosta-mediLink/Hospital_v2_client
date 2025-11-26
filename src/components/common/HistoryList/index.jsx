@@ -9,12 +9,14 @@ import EmptyState from "./EmptyState";
  * @param {Object} props.groupedData - 월별로 그룹화된 데이터 { "2025-11": [...], "2025-10": [...] }
  * @param {Function} props.onCancel - 취소 버튼 클릭 핸들러
  * @param {Function} props.onShare - 공유 버튼 클릭 핸들러
+ * @param {Function} props.onDetail - 상세 정보 보기 핸들러
  */
 export default function HistoryList({
   type = "reservation",
   groupedData = {},
   onCancel,
   onShare,
+  onDetail,
 }) {
   const entries = Object.entries(groupedData);
 
@@ -39,6 +41,7 @@ export default function HistoryList({
                 item={item}
                 onCancel={onCancel}
                 onShare={onShare}
+                onDetail={onDetail}
               />
             ))}
           </div>
