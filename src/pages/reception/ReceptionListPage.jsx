@@ -195,11 +195,11 @@ export default function ReceptionListPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen max-w-[393px] mx-auto bg-white">
+    <div className="flex flex-col h-screen max-w-[393px] mx-auto bg-white">
       <Header showBack={true} />
 
-      {/* 탭 네비게이션 (예약/접수) */}
-      <nav className="grid grid-cols-2 h-12 border-b border-gray-200 bg-white">
+      {/* 탭 네비게이션 (예약/접수) - 고정 */}
+      <nav className="sticky top-0 z-10 grid grid-cols-2 h-12 border-b border-gray-200 bg-white">
         <button
           onClick={() => navigate("/reservation/list")}
           className="flex items-center justify-center text-sm font-semibold text-gray-500"
@@ -211,17 +211,19 @@ export default function ReceptionListPage() {
         </button>
       </nav>
 
-      {/* 필터 */}
-      <FilterTabs
-        type="reception"
-        selectedMonth={selectedMonth}
-        selectedStatus={selectedStatus}
-        monthOptions={monthOptions}
-        onFilterChange={handleFilterChange}
-      />
+      {/* 필터 - 고정 */}
+      <div className="sticky top-12 z-10 bg-white">
+        <FilterTabs
+          type="reception"
+          selectedMonth={selectedMonth}
+          selectedStatus={selectedStatus}
+          monthOptions={monthOptions}
+          onFilterChange={handleFilterChange}
+        />
+      </div>
 
-      {/* 리스트 */}
-      <main className="flex-1 overflow-y-auto bg-gray-50 pb-20">
+      {/* 리스트 - 스크롤 영역 */}
+      <main className="flex-1 overflow-y-auto bg-gray-50">
         {isLoading || isDeleting ? (
           <div className="flex items-center justify-center py-12 text-gray-500">
             {isDeleting ? "취소 중..." : "로딩중..."}
@@ -234,6 +236,8 @@ export default function ReceptionListPage() {
             onShare={handleShare}
           />
         )}
+        {/* 하단 여백 (BottomNav 겹침 방지) */}
+        <div className="h-20" />
       </main>
 
       <BottomNav />
