@@ -194,9 +194,9 @@ function DoctorSelectPage() {
         {/* 의사 카드 캐러셀 영역 - 고정 */}
         <div
           className="fixed top-[194px] left-1/2 -translate-x-1/2 w-full max-w-[393px] px-4 bg-[#F8FAFC] z-30"
-          style={{ height: "440px" }}
+          style={{ height: "calc(100vh - 194px - 76px - 72px)" }}
         >
-          <div className="relative h-[380px] overflow-hidden pt-4">
+          <div className="relative h-full overflow-hidden pt-4 pb-4">
             {doctors.map((doctor, index) => {
               const rel =
                 (index - currentDoctorIndex + doctors.length) % doctors.length;
@@ -216,7 +216,7 @@ function DoctorSelectPage() {
                     {/* 상단: 이름 + 프로필 */}
                     <div
                       className="flex items-center justify-between"
-                      style={{ minHeight: "160px" }}
+                      style={{ minHeight: "140px" }}
                     >
                       <div className="flex-1">
                         <h3 className="text-xl font-extrabold text-[#0F172A]">
@@ -333,7 +333,7 @@ function DoctorSelectPage() {
         </div>
 
         {/* 하단 고정 버튼 */}
-        <div className="fixed bottom-[76px] left-1/2 -translate-x-1/2 w-full max-w-[393px] bg-white p-4 z-40 border-t border-gray-100">
+        <div className="fixed bottom-[72px] left-1/2 -translate-x-1/2 w-full max-w-[393px] bg-white p-4 z-40 border-t border-gray-100">
           <button
             onClick={handleNext}
             className="w-full rounded-xl bg-[#2563EB] text-white py-3.5 text-base font-bold shadow-sm active:scale-[0.99] transition"

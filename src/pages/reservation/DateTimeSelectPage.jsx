@@ -191,7 +191,7 @@ function DateTimeSelectPage() {
         </div>
 
         {/* 메인 콘텐츠 - 스크롤 */}
-        <main className="flex-1 overflow-y-auto pb-[144px] pt-16">
+        <main className="flex-1 overflow-y-auto pb-[164px] pt-16">
           {/* 달력 섹션 */}
           <section className="mt-2">
             <Calendar
@@ -203,7 +203,7 @@ function DateTimeSelectPage() {
 
           {/* 시간 선택 섹션 */}
           {selectedDate && (
-            <section className="mt-2">
+            <section className="mt-2 mb-4">
               <TimeSlotGrid
                 amSlots={amSlots}
                 pmSlots={pmSlots}

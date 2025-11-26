@@ -15,7 +15,7 @@ import NoticeBox from "./NoticeBox";
  * @param {string} props.data.appointmentTime - 예약시간 (HH:MM)
  * @param {string} [props.data.symptom] - 증상 (접수만)
  */
-export default function ReservationComplete({ type = "reservation", data }) {
+export default function ReservationComplete({ type = "reservation", data }) {;
   const navigate = useNavigate();
 
   const config = {
