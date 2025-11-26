@@ -35,7 +35,8 @@ export const initKakaoSdk = () => {
           console.error("❌ 카카오 SDK 초기화 에러:", error);
         }
       } else {
-        console.warn("⚠️ VITE_KAKAO_JS_KEY가 .env 파일에 설정되지 않았습니다.");
+        // 카카오 공유 기능을 사용하지 않는 경우 경고 제거
+        // console.warn("⚠️ VITE_KAKAO_JS_KEY가 .env 파일에 설정되지 않았습니다.");
       }
     }
   };

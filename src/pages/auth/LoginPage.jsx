@@ -68,7 +68,7 @@ function LoginPage() {
 
   return (
     <AppLayout headerProps={headerProps}>
-      <div className="mt-[24px] px-[22px] py-[28px] bg-white rounded-2xl">
+      <div className="mt-0 px-[22px] py-[28px] bg-white rounded-2xl">
         <div className="flex flex-col items-center mb-6">
           <img 
             src="/images/logo.png" 
