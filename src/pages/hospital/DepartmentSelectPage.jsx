@@ -131,7 +131,7 @@ function DepartmentSelectPage() {
               <p className="text-slate-500">검색 결과가 없습니다.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 pb-32">
+            <div className="grid grid-cols-2 gap-3 pb-40">
               {filteredDepartments.map((dept) => (
                 <label
                   key={dept.departmentId}
@@ -146,20 +146,20 @@ function DepartmentSelectPage() {
                     className="sr-only"
                   />
                   <div
-                    className={`h-32 rounded-2xl border-2 bg-white flex flex-col items-center justify-center gap-3 transition shadow-sm ${
+                    className={`h-32 rounded-2xl border bg-white flex flex-col items-center justify-center gap-3 transition shadow-sm ${
                       selectedDeptId === dept.departmentId
-                        ? "border-blue-600 bg-blue-50"
-                        : "border-slate-200"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-slate-100"
                     }`}
                   >
                     {/* 원형 배경 + 첫 글자 */}
-                    <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center">
-                      <span className="text-2xl font-bold text-blue-600">
+                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span className="text-xl font-bold text-blue-600">
                         {getFirstChar(dept.name)}
                       </span>
                     </div>
                     {/* 진료과명 */}
-                    <span className="text-base font-bold text-slate-900">
+                    <span className="text-[13px] font-bold text-slate-900">
                       {dept.name}
                     </span>
                   </div>
