@@ -32,16 +32,15 @@ function TodayReservationPage() {
   };
 
   const handleReception = (reservation) => {
-    // 증상 선택 페이지로 이동하면서 예약 정보 전달
-    navigate("/reception/symptom", {
+    // 예약 기반 접수 전용 페이지로 이동
+    navigate("/reservation/symptom", {
       state: {
-        type: "RESERVATION",
         reservationId: reservation.reservationId,
         reservationNo: reservation.reservationNo,
         departmentName: reservation.departmentName,
         doctorName: reservation.doctorName,
-        doctorId: reservation.doctorId, // doctorId 추가
         reservationTime: reservation.reservationTime,
+        fromPage: "/reservation/today",
       },
     });
   };
